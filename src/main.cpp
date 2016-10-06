@@ -1,13 +1,11 @@
-#include <QtWidgets/qapplication.h>
-#include <QtWidgets/qwidget.h>
+#include <qt5/QtWidgets/qapplication.h>
+#include "MainWindow.h"
 
 int main(int argc, char *argv[]) {
 	QApplication app(argc, argv);
 
-	QWidget window;
+	MainWindow window;
 
-	window.resize(250, 150);
-	window.setWindowTitle("Simple example");
 	window.show();
 
 	return app.exec();

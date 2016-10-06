@@ -11,7 +11,23 @@ include_directories(${Qt5Widgets_INCLUDES})
 
 find_package(Qt5Widgets)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-add_executable(disgrace src/main.cpp)
+set(QT5_LIBRARIES Qt5::Widgets)
 
-qt5_use_modules(disgrace Widgets)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+
+set(SOURCES
+	src/main.cpp
+	src/MainWindow.cpp
+	src/Dataset.cpp
+)
+
+set(UI_SOURCES
+	src/MainWindow.ui
+)
+
+qt5_wrap_ui(UI_GENERATED_HEADERS ${UI_SOURCES})
+
+add_executable(disgrace ${SOURCES} ${UI_GENERATED_HEADERS})
+
+target_link_libraries(disgrace ${QT5_LIBRARIES})
+#qt5_use_modules(disgrace Widgets)
