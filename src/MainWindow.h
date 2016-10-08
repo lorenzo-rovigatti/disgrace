@@ -9,6 +9,7 @@
 #define MAINWINDOW_H_
 
 #include <qmainwindow.h>
+#include "Data/Dataset.h"
 
 namespace Ui {
 class MainWindow;
@@ -21,6 +22,9 @@ public:
 	explicit MainWindow(QWidget *parent = 0);
 	virtual ~MainWindow();
 
+	void add_plot(dg::Dataset &, bool rescale=true);
+
+	// Slots
 	void toggle_range_dragging(bool);
 	void toggle_range_zooming(bool);
 

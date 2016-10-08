@@ -5,7 +5,9 @@
 #include <qt5/QtCore/qdebug.h>
 #include <qt5/QtCore/qdatetime.h>
 #include <qt5/QtCore/qfileinfo.h>
+
 #include "MainWindow.h"
+#include "Data/DatasetFactory.h"
 
 void setup_parser(QCommandLineParser &parser) {
 	parser.setApplicationDescription(QApplication::translate("main", "A qt5-based plotting tool inspired by xmgrace"));
@@ -44,10 +46,16 @@ int main(int argc, char *argv[]) {
 	setup_parser(parser);
 	parser.process(app);
 
+	MainWindow window;
+
 	const QStringList args = parser.positionalArguments();
 	qDebug() << "Passed in" << args.size() << "file(s)";
 
-	MainWindow window;
+	QString filename;
+	foreach(filename, args) {
+		dg::Dataset new_dataset = dg::DatasetFactory::build_dataset(filename);
+		window.add_plot(new_dataset);
+	}
 
 	window.show();
 

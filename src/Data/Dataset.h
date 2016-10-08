@@ -8,7 +8,7 @@
 #ifndef DATASET_H_
 #define DATASET_H_
 
-#include <vector>
+#include <qt5/QtCore/qvector.h>
 
 namespace dg {
 
@@ -17,7 +17,7 @@ public:
 	Dataset();
 	virtual ~Dataset();
 
-	std::vector<double> x, y, z, dx, dy, dz;
+	QVector<double> x, y, z, dx, dy, dz;
 };
 
 } /* namespace dg */

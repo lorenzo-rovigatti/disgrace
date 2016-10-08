@@ -25,7 +25,8 @@ set(SOURCES
 	src/qcustomplot/qcustomplot.cpp
 	src/main.cpp
 	src/MainWindow.cpp
-	src/Dataset.cpp
+	src/Data/Dataset.cpp
+	src/Data/DatasetFactory.cpp
 	src/AgrParser/AgrFile.cpp
 )
 

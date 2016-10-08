@@ -21,6 +21,13 @@ MainWindow::~MainWindow() {
 	delete _ui;
 }
 
+void MainWindow::add_plot(dg::Dataset &new_set, bool rescale) {
+	QCPGraph *new_graph = _ui->custom_plot->addGraph();
+	new_graph->setData(new_set.x, new_set.y);
+
+	if(rescale) _ui->custom_plot->rescaleAxes(true);
+}
+
 void MainWindow::toggle_range_dragging(bool val) {
 	qDebug() << "Toggling the range dragging to" << val;
 	_ui->custom_plot->setInteraction(QCP::iRangeDrag, val);

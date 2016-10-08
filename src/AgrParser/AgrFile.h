@@ -8,7 +8,7 @@
 #ifndef AGRPARSER_AGRFILE_H_
 #define AGRPARSER_AGRFILE_H_
 
-#include "../Dataset.h"
+#include "../Data/Dataset.h"
 
 namespace dg {
 
