@@ -9,16 +9,24 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # The Qt5Widgets_INCLUDES also includes the include directories for dependencies QtCore and QtGui
 include_directories(${Qt5Widgets_INCLUDES})
 
-find_package(Qt5Widgets)
+# This allows ui_MainWindow.h to find qcustomplot.h
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/qcustomplot)
 
-set(QT5_LIBRARIES Qt5::Widgets)
+add_definitions(-DQT_MESSAGELOGCONTEXT) 
+
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5PrintSupport REQUIRED)
+
+set(QT5_LIBRARIES Qt5::Widgets Qt5::PrintSupport)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 set(SOURCES
+	src/qcustomplot/qcustomplot.cpp
 	src/main.cpp
 	src/MainWindow.cpp
 	src/Dataset.cpp
+	src/AgrParser/AgrFile.cpp
 )
 
 set(UI_SOURCES
