@@ -9,12 +9,16 @@
 
 namespace dg {
 
-Dataset::Dataset() {
+Dataset::Dataset(): _name("") {
 
 }
 
 Dataset::~Dataset() {
 
+}
+
+void Dataset::set_name(QString name) {
+	_name = name;
 }
 
 } /* namespace dg */

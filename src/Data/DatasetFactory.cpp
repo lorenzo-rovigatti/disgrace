@@ -16,6 +16,7 @@ namespace dg {
 
 Dataset DatasetFactory::build_dataset(QString filename) {
 	Dataset new_dataset;
+	new_dataset.set_name(filename);
 
 	QFile input(filename);
 	if(!input.open(QIODevice::ReadOnly | QIODevice::Text)) qCritical() << "File" << filename << "is not readable";

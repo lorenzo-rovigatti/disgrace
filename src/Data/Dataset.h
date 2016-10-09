@@ -13,11 +13,16 @@
 namespace dg {
 
 class Dataset {
+private:
+	QString _name;
 public:
 	Dataset();
 	virtual ~Dataset();
 
 	QVector<double> x, y, z, dx, dy, dz;
+
+	QString name() { return _name; }
+	void set_name(QString name);
 };
 
 } /* namespace dg */
