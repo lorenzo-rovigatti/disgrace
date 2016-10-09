@@ -9,6 +9,8 @@
 #define MAINWINDOW_H_
 
 #include <qmainwindow.h>
+#include "qcustomplot/qcustomplot.h"
+
 #include "Data/Dataset.h"
 
 namespace Ui {
@@ -27,8 +29,10 @@ public:
 	// Slots
 	void toggle_range_dragging(bool);
 	void toggle_range_zooming(bool);
+	void export_as_pdf();
 
 private:
+	void _initialise_axis(QCPAxis *);
 	void _initialise_custom_plot();
 	Ui::MainWindow *_ui;
 };

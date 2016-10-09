@@ -9,6 +9,7 @@ complete rewrite is necessary.
 For now, this document will contain the list of features that I would like to implement.
 
 ## Features
+* Undo/redo
 * Disgrace should be able to read in sets from files passed as command-line arguments
 * Disgrace files should also contain the data sets
 * Disgrace should be able to parse xmgrace .agr files. Maybe also write them?

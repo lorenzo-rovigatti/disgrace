@@ -33,12 +33,20 @@
     <property name="title">
      <string>Fi&amp;le</string>
     </property>
+    <widget class="QMenu" name="menuExport_as">
+     <property name="title">
+      <string>Export as</string>
+     </property>
+     <addaction name="action_export_as_PDF"/>
+    </widget>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
-    <addaction name="actionSave_as"/>
+    <addaction name="action_save_as"/>
     <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="menuExport_as"/>
+    <addaction name="separator"/>
+    <addaction name="action_exit"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -53,8 +61,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionToggle_range_dragging"/>
-   <addaction name="actionToggle_range_zooming"/>
+   <addaction name="action_toggle_range_dragging"/>
+   <addaction name="action_toggle_range_zooming"/>
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -71,17 +79,17 @@
     <string>&amp;Save</string>
    </property>
   </action>
-  <action name="actionSave_as">
+  <action name="action_save_as">
    <property name="text">
     <string>Sa&amp;ve as...</string>
    </property>
   </action>
-  <action name="actionExit">
+  <action name="action_exit">
    <property name="text">
     <string>&amp;Exit</string>
    </property>
   </action>
-  <action name="actionToggle_range_dragging">
+  <action name="action_toggle_range_dragging">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -89,10 +97,10 @@
     <string>Toggle range dragging</string>
    </property>
    <property name="toolTip">
-    <string>Enable/disable the direct manipulation of the axes ranges</string>
+    <string>Enable/disable the direct manipulation of the axes ranges by mouse dragging</string>
    </property>
   </action>
-  <action name="actionToggle_range_zooming">
+  <action name="action_toggle_range_zooming">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -101,6 +109,11 @@
    </property>
    <property name="toolTip">
     <string>Enable/disable the direct manipulation of the axes ranges via the mouse wheel</string>
+   </property>
+  </action>
+  <action name="action_export_as_PDF">
+   <property name="text">
+    <string>PDF...</string>
    </property>
   </action>
  </widget>
@@ -113,5 +126,22 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>action_exit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
