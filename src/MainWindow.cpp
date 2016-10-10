@@ -8,10 +8,14 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
+#include "Commands/Legend.h"
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), _ui(new Ui::MainWindow), _toggle_drag_legend(false), _dragging_legend(false) {
 	_ui->setupUi(this);
+
 	_plot = _ui->custom_plot;
 
+	_initialise_undo_stack();
 	_initialise_custom_plot();
 
 	QObject::connect(_ui->action_toggle_range_dragging, &QAction::toggled, this, &MainWindow::toggle_range_dragging);
@@ -75,31 +79,40 @@ void MainWindow::mouse_move_signal(QMouseEvent *event) {
 void MainWindow::mouse_press_signal(QMouseEvent *event) {
 	if(_toggle_drag_legend && _plot->legend->selectTest(event->pos(), false) > 0) {
 		_dragging_legend = true;
+		_old_legend_pos = _plot->axisRect()->insetLayout()->insetRect(0).topLeft();
 		// since insetRect is in axisRect coordinates (0..1), we transform the mouse position:
 		QPointF mousePoint((event->pos().x() - _plot->axisRect()->left()) / (double) _plot->axisRect()->width(), (event->pos().y() - _plot->axisRect()->top()) / (double) _plot->axisRect()->height());
-		_drag_legend_origin = mousePoint - _plot->axisRect()->insetLayout()->insetRect(0).topLeft();
+		_drag_legend_origin = mousePoint - _old_legend_pos;
 	}
 }
 
 void MainWindow::mouse_release_signal(QMouseEvent *event) {
-	Q_UNUSED(event)
-	_dragging_legend = false;
+	Q_UNUSED(event);
+
+	if(_dragging_legend) {
+		_dragging_legend = false;
+		_undo_stack->push(new dg::MoveLegendCommand(_plot, _plot->axisRect()->insetLayout(), _old_legend_pos));
+	}
 }
 
 void MainWindow::before_replot() {
-	// this is to prevent the legend from stretching if the _plot is stretched.
-	// Since we've set the inset placement to be ipFree, the width/height of the legend
-	// is also defined in axisRect coordinates (0..1) and thus would stretch.
-	// This is due to change in a future release (probably QCP 2.0) since it's basically a design mistake.
+	// this is to prevent the legend from stretching if the plot is stretched since we've set the inset placement to be ipFree, the width/height of the legend
+	// is also defined in axisRect coordinates (0..1) and thus would stretch. This is due to change in a future release (still an issue in QCP 2.0 though).
 	_plot->legend->setMaximumSize(_plot->legend->minimumSizeHint());
 }
 
 void MainWindow::export_as_pdf() {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Export to..."), "", tr("PDF files(*.pdf)"));
 
-	if(filename.size() > 0) {
-		_plot->savePdf(filename);
-	}
+	if(filename.size() > 0) _plot->savePdf(filename);
+}
+
+void MainWindow::undo() {
+
+}
+
+void MainWindow::redo() {
+
 }
 
 void MainWindow::_initialise_axis(QCPAxis *axis) {
@@ -118,6 +131,21 @@ void MainWindow::_initialise_axis(QCPAxis *axis) {
 
 	// subticks
 	axis->setSubTickLengthIn(7);
+}
+
+void MainWindow::_initialise_undo_stack() {
+	_undo_stack = new QUndoStack();
+
+	_undo_view = new QUndoView(_undo_stack);
+	_undo_view->setWindowTitle(tr("Command List"));
+	_undo_view->show();
+	_undo_view->setAttribute(Qt::WA_QuitOnClose, false);
+
+	_ui->action_undo->setShortcuts(QKeySequence::Undo);
+	QObject::connect(_ui->action_undo, &QAction::triggered, _undo_stack, &QUndoStack::undo);
+
+	_ui->action_redo->setShortcuts(QKeySequence::Redo);
+	QObject::connect(_ui->action_redo, &QAction::triggered, _undo_stack, &QUndoStack::redo);
 }
 
 void MainWindow::_initialise_custom_plot() {

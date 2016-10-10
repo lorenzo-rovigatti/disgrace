@@ -26,7 +26,8 @@ Dataset DatasetFactory::build_dataset(QString filename) {
 	while(!input.atEnd()) {
 		QString line = QString(input.readLine()).trimmed();
 		if(line[0] != '#') {
-			QStringList spl = line.split(' ');
+			// the regexp makes it possible to split the line in the presence of *any* whitespace
+			QStringList spl = line.split(QRegExp("\\s"));
 			if(spl.size() > 0) {
 				if(n_columns == -1) n_columns = spl.size();
 				bool conv_ok = true;

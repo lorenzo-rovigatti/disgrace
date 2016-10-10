@@ -9,6 +9,8 @@
 #define MAINWINDOW_H_
 
 #include <qmainwindow.h>
+#include <qundostack.h>
+
 #include "qcustomplot/qcustomplot.h"
 
 #include "Data/Dataset.h"
@@ -32,6 +34,8 @@ public:
 	void toggle_legend(bool);
 	void toggle_drag_legend(bool);
 	void export_as_pdf();
+	void undo();
+	void redo();
 
 	void mouse_move_signal(QMouseEvent *event);
 	void mouse_press_signal(QMouseEvent *event);
@@ -41,11 +45,15 @@ public:
 private:
 	void _initialise_axis(QCPAxis *);
 	void _initialise_custom_plot();
+	void _initialise_undo_stack();
 	Ui::MainWindow *_ui;
+
+	QUndoStack *_undo_stack;
+	QUndoView *_undo_view;
 
 	QCustomPlot *_plot;
 	bool _toggle_drag_legend, _dragging_legend;
-	QPointF _drag_legend_origin;
+	QPointF _drag_legend_origin, _old_legend_pos;
 };
 
 #endif /* MAINWINDOW_H_ */

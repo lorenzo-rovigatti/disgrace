@@ -16,6 +16,13 @@ void setup_parser(QCommandLineParser &parser) {
 	parser.addPositionalArgument("file(s)", QApplication::translate("main", "Text file(s) containing the data to be plotted"));
 }
 
+/**
+ * Logs the message msg, also adding the message type, timestamp and the filename, function and line which called the logger.
+ *
+ * @param type
+ * @param context
+ * @param msg
+ */
 void message_handler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
 	static const char* typeStr[] = { "[   Debug]", "[ Warning]", "[Critical]", "[   Fatal]" };
 
