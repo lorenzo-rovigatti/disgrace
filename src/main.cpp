@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include <qt5/QtWidgets/qapplication.h>
-#include <qt5/QtCore/qcommandlineparser.h>
-#include <qt5/QtCore/qdebug.h>
-#include <qt5/QtCore/qdatetime.h>
-#include <qt5/QtCore/qfileinfo.h>
+#include <QApplication>
+#include <QCommandLineParser>
+#include <QDebug>
+#include <QDateTime>
+#include <QFileInfo>
 
 #include "MainWindow.h"
 #include "Data/DatasetFactory.h"
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
 	setup_parser(parser);
 	parser.process(app);
 
-	MainWindow window;
+	dg::MainWindow window;
 
 	const QStringList args = parser.positionalArguments();
 	qDebug() << "Passed in" << args.size() << "file(s)";

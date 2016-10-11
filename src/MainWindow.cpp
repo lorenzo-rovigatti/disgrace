@@ -8,7 +8,11 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
+#include "Data/DatasetFactory.h"
+#include "Dialogs/ImportDataset.h"
 #include "Commands/Legend.h"
+
+namespace dg {
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), _ui(new Ui::MainWindow), _toggle_drag_legend(false), _dragging_legend(false) {
 	_ui->setupUi(this);
@@ -23,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), _ui(new Ui::MainW
 	QObject::connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
 	QObject::connect(_ui->action_toggle_drag_legend, &QAction::triggered, this, &MainWindow::toggle_drag_legend);
 	QObject::connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
+	QObject::connect(_ui->action_data_import, &QAction::triggered, this, &MainWindow::data_import);
 
 	QObject::connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::mouse_move_signal);
 	QObject::connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::mouse_press_signal);
@@ -107,12 +112,16 @@ void MainWindow::export_as_pdf() {
 	if(filename.size() > 0) _plot->savePdf(filename);
 }
 
-void MainWindow::undo() {
-
-}
-
-void MainWindow::redo() {
-
+void MainWindow::data_import() {
+	ImportDataset *import_dataset = new ImportDataset(this);
+	int r = import_dataset->exec();
+	if(r == QDialog::Accepted) {
+		ImportDatasetResult res = import_dataset->get_options();
+		bool autoscale = res.autoscale.compare("None", Qt::CaseInsensitive);
+		dg::Dataset new_dataset = DatasetFactory::build_dataset(res.filename);
+		add_plot(new_dataset, autoscale);
+		_plot->replot();
+	}
 }
 
 void MainWindow::_initialise_axis(QCPAxis *axis) {
@@ -163,3 +172,5 @@ void MainWindow::_initialise_custom_plot() {
 	// set the placement of the legend (index 0 in the axis rect's inset layout) to not be border-aligned (default), but freely, so we can reposition it anywhere:
 	_plot->axisRect()->insetLayout()->setInsetPlacement(0, QCPLayoutInset::ipFree);
 }
+
+} /* namespace dg */

@@ -8,8 +8,8 @@
 #ifndef MAINWINDOW_H_
 #define MAINWINDOW_H_
 
-#include <qmainwindow.h>
-#include <qundostack.h>
+#include <QMainWindow>
+#include <QUndoStack>
 
 #include "qcustomplot/qcustomplot.h"
 
@@ -19,6 +19,8 @@ namespace Ui {
 class MainWindow;
 }
 
+namespace dg {
+
 class MainWindow: public QMainWindow {
 Q_OBJECT
 
@@ -26,7 +28,8 @@ public:
 	explicit MainWindow(QWidget *parent = 0);
 	virtual ~MainWindow();
 
-	void add_plot(dg::Dataset &, bool rescale=true);
+	// TODO: we should use a QList of Dataset objects
+	void add_plot(Dataset &, bool rescale=true);
 
 	// Slots
 	void toggle_range_dragging(bool);
@@ -34,8 +37,7 @@ public:
 	void toggle_legend(bool);
 	void toggle_drag_legend(bool);
 	void export_as_pdf();
-	void undo();
-	void redo();
+	void data_import();
 
 	void mouse_move_signal(QMouseEvent *event);
 	void mouse_press_signal(QMouseEvent *event);
@@ -55,5 +57,7 @@ private:
 	bool _toggle_drag_legend, _dragging_legend;
 	QPointF _drag_legend_origin, _old_legend_pos;
 };
+
+} /* namespace dg */
 
 #endif /* MAINWINDOW_H_ */

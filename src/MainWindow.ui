@@ -62,8 +62,15 @@
     <addaction name="action_undo"/>
     <addaction name="action_redo"/>
    </widget>
+   <widget class="QMenu" name="menuData">
+    <property name="title">
+     <string>Data</string>
+    </property>
+    <addaction name="action_data_import"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuData"/>
    <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -162,6 +169,11 @@
   <action name="action_redo">
    <property name="text">
     <string>Redo</string>
+   </property>
+  </action>
+  <action name="action_data_import">
+   <property name="text">
+    <string>Import...</string>
    </property>
   </action>
  </widget>

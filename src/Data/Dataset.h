@@ -8,8 +8,8 @@
 #ifndef DATASET_H_
 #define DATASET_H_
 
-#include <qt5/QtCore/qvector.h>
-#include <qt5/QtCore/qstring.h>
+#include <QVector>
+#include <QString>
 
 namespace dg {
 

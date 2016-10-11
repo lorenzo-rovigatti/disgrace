@@ -14,6 +14,7 @@ namespace dg {
 
 class DatasetFactory {
 public:
+	// TODO: we should return a QList of Dataset objects
 	static Dataset build_dataset(QString filename);
 
 private:

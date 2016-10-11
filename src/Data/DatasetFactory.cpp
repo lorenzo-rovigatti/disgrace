@@ -7,8 +7,8 @@
 
 #include "DatasetFactory.h"
 
-#include <qt5/QtCore/qdebug.h>
-#include <qt5/QtCore/qfile.h>
+#include <QDebug>
+#include <QFile>
 
 using namespace std;
 
@@ -25,31 +25,29 @@ Dataset DatasetFactory::build_dataset(QString filename) {
 	int n_lines = 0;
 	while(!input.atEnd()) {
 		QString line = QString(input.readLine()).trimmed();
-		if(line[0] != '#') {
+		if(line[0] != '#' && line.size() > 0) {
 			// the regexp makes it possible to split the line in the presence of *any* whitespace
 			QStringList spl = line.split(QRegExp("\\s"));
-			if(spl.size() > 0) {
-				if(n_columns == -1) n_columns = spl.size();
-				bool conv_ok = true;
+			if(n_columns == -1) n_columns = spl.size();
+			bool conv_ok = true;
 
-				switch(n_columns) {
-				case 1: {
-					new_dataset.x.push_back(n_lines);
-					double val = spl[0].toDouble(&conv_ok);
-					new_dataset.y.push_back(val);
-					break;
-				}
-				case 2:
-				default: {
-					double val = spl[0].toDouble(&conv_ok);
-					new_dataset.x.push_back(val);
-					val = spl[1].toDouble(&conv_ok);
-					new_dataset.y.push_back(val);
-				}
-				}
-
-				n_lines++;
+			switch(n_columns) {
+			case 1: {
+				new_dataset.x.push_back(n_lines);
+				double val = spl[0].toDouble(&conv_ok);
+				new_dataset.y.push_back(val);
+				break;
 			}
+			case 2:
+			default: {
+				double val = spl[0].toDouble(&conv_ok);
+				new_dataset.x.push_back(val);
+				val = spl[1].toDouble(&conv_ok);
+				new_dataset.y.push_back(val);
+			}
+			}
+
+			n_lines++;
 		}
 	}
 
