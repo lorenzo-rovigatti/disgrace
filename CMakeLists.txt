@@ -26,7 +26,7 @@ set(SOURCES
 	src/main.cpp
 	src/MainWindow.cpp
 	src/Data/Dataset.cpp
-	src/Data/DatasetFactory.cpp
+	src/Data/DataManager.cpp
 	src/Commands/Legend.cpp
 	src/Dialogs/ImportDataset.cpp
 	src/AgrParser/AgrFile.cpp

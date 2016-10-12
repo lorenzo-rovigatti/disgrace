@@ -13,7 +13,7 @@
 
 #include "qcustomplot/qcustomplot.h"
 
-#include "Data/Dataset.h"
+#include "Data/DataManager.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,11 +25,10 @@ class MainWindow: public QMainWindow {
 Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget *parent = 0);
+	explicit MainWindow(QCommandLineParser *parser, QWidget *parent = 0);
 	virtual ~MainWindow();
 
-	// TODO: we should use a QList of Dataset objects
-	void add_plot(Dataset &, bool rescale=true);
+	void write_to_pdf(QString);
 
 	// Slots
 	void toggle_range_dragging(bool);
@@ -39,10 +38,11 @@ public:
 	void export_as_pdf();
 	void data_import();
 
-	void mouse_move_signal(QMouseEvent *event);
-	void mouse_press_signal(QMouseEvent *event);
-	void mouse_release_signal(QMouseEvent *event);
+	void mouse_move(QMouseEvent *event);
+	void mouse_press(QMouseEvent *event);
+	void mouse_release(QMouseEvent *event);
 	void before_replot();
+
 
 private:
 	void _initialise_axis(QCPAxis *);
@@ -56,6 +56,8 @@ private:
 	QCustomPlot *_plot;
 	bool _toggle_drag_legend, _dragging_legend;
 	QPointF _drag_legend_origin, _old_legend_pos;
+
+	DataManager *_data_manager;
 };
 
 } /* namespace dg */

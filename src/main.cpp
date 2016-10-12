@@ -7,7 +7,6 @@
 #include <QFileInfo>
 
 #include "MainWindow.h"
-#include "Data/DatasetFactory.h"
 
 void setup_parser(QCommandLineParser &parser) {
 	parser.setApplicationDescription(QApplication::translate("main", "A qt5-based plotting tool inspired by xmgrace"));
@@ -53,18 +52,24 @@ int main(int argc, char *argv[]) {
 	setup_parser(parser);
 	parser.process(app);
 
-	dg::MainWindow window;
-
-	const QStringList args = parser.positionalArguments();
-	qDebug() << "Passed in" << args.size() << "file(s)";
-
-	QString filename;
-	foreach(filename, args) {
-		dg::Dataset new_dataset = dg::DatasetFactory::build_dataset(filename);
-		window.add_plot(new_dataset);
-	}
+	dg::MainWindow window(&parser);
 
 	window.show();
+
+	// this code gives an idea of what needs to be done to directly export to a file without showing the window (or showing the window for as little time as possible)
+//	window.write_to_pdf("/home/rovigattil/prova.pdf");
+//	window.close();
+//	QWidgetList ql = app.topLevelWidgets();
+//	foreach(QWidget *w, ql) {
+//		qDebug() << w->metaObject()->className();
+//		QMenu *menu = static_cast<QMenu *>(w);
+//		if(menu) {
+//			qDebug() << menu->title() << menu->isVisible();
+//			menu->close();
+//		}
+//	}
+//	app.quit();
+//	printf("N %d\n", ql.size());
 
 	return app.exec();
 }

@@ -1,20 +1,19 @@
 /*
- * DatasetFactory.cpp
+ * DataManager.cpp
  *
- *  Created on: 08 ott 2016
- *      Author: lorenzo
+ *  Created on: 12 Oct 2016
+ *      Author: rovigattil
  */
 
-#include "DatasetFactory.h"
-
-#include <QDebug>
-#include <QFile>
-
-using namespace std;
+#include "DataManager.h"
 
 namespace dg {
 
-Dataset DatasetFactory::build_dataset(QString filename) {
+DataManager::DataManager(QCustomPlot *plot): _plot(plot) {
+
+}
+
+void DataManager::add_datasets_from_file(QString filename, bool rescale) {
 	Dataset new_dataset;
 	new_dataset.set_name(filename);
 
@@ -51,16 +50,21 @@ Dataset DatasetFactory::build_dataset(QString filename) {
 		}
 	}
 
-	input.close();
+	QCPGraph *new_graph = _plot->addGraph();
+	new_graph->setData(new_dataset.x, new_dataset.y);
+	new_graph->setName(new_dataset.name());
+	new_graph->addToLegend();
 
-	return new_dataset;
+	if(rescale) _plot->rescaleAxes(true);
+	_plot->replot();
 }
 
-DatasetFactory::~DatasetFactory() {
-
-}
-DatasetFactory::DatasetFactory() {
-
+DataManager::~DataManager() {
+	QMap<Dataset *, QCPAbstractPlottable *>::iterator it = _datasets.begin();
+	while(it != _datasets.end()) {
+		delete it.key();
+		++it;
+	}
 }
 
 } /* namespace dg */

@@ -8,16 +8,16 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "Data/DatasetFactory.h"
 #include "Dialogs/ImportDataset.h"
 #include "Commands/Legend.h"
 
 namespace dg {
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), _ui(new Ui::MainWindow), _toggle_drag_legend(false), _dragging_legend(false) {
+MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) : QMainWindow(parent), _ui(new Ui::MainWindow), _toggle_drag_legend(false), _dragging_legend(false) {
 	_ui->setupUi(this);
 
 	_plot = _ui->custom_plot;
+	_data_manager = new DataManager(_plot);
 
 	_initialise_undo_stack();
 	_initialise_custom_plot();
@@ -29,23 +29,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), _ui(new Ui::MainW
 	QObject::connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
 	QObject::connect(_ui->action_data_import, &QAction::triggered, this, &MainWindow::data_import);
 
-	QObject::connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::mouse_move_signal);
-	QObject::connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::mouse_press_signal);
-	QObject::connect(_plot, &QCustomPlot::mouseRelease, this, &MainWindow::mouse_release_signal);
+	QObject::connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::mouse_move);
+	QObject::connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::mouse_press);
+	QObject::connect(_plot, &QCustomPlot::mouseRelease, this, &MainWindow::mouse_release);
 	QObject::connect(_plot, &QCustomPlot::beforeReplot, this, &MainWindow::before_replot);
+
+	const QStringList args = parser->positionalArguments();
+	qDebug() << "Passed in" << args.size() << "file(s)";
+
+	foreach(QString filename, args) {
+		_data_manager->add_datasets_from_file(filename, true);
+	}
 }
 
 MainWindow::~MainWindow() {
 	delete _ui;
-}
-
-void MainWindow::add_plot(dg::Dataset &new_set, bool rescale) {
-	QCPGraph *new_graph = _plot->addGraph();
-	new_graph->setData(new_set.x, new_set.y);
-	new_graph->setName(new_set.name());
-	new_graph->addToLegend();
-
-	if(rescale) _plot->rescaleAxes(true);
+	delete _data_manager;
+	delete _undo_view;
+	delete _undo_stack;
 }
 
 void MainWindow::toggle_range_dragging(bool val) {
@@ -69,7 +70,7 @@ void MainWindow::toggle_drag_legend(bool val) {
 	_toggle_drag_legend = val;
 }
 
-void MainWindow::mouse_move_signal(QMouseEvent *event) {
+void MainWindow::mouse_move(QMouseEvent *event) {
 	if(_dragging_legend) {
 		QRectF rect = _plot->axisRect()->insetLayout()->insetRect(0);
 		// since insetRect is in axisRect coordinates (0..1), we transform the mouse position:
@@ -81,7 +82,7 @@ void MainWindow::mouse_move_signal(QMouseEvent *event) {
 
 }
 
-void MainWindow::mouse_press_signal(QMouseEvent *event) {
+void MainWindow::mouse_press(QMouseEvent *event) {
 	if(_toggle_drag_legend && _plot->legend->selectTest(event->pos(), false) > 0) {
 		_dragging_legend = true;
 		_old_legend_pos = _plot->axisRect()->insetLayout()->insetRect(0).topLeft();
@@ -91,7 +92,7 @@ void MainWindow::mouse_press_signal(QMouseEvent *event) {
 	}
 }
 
-void MainWindow::mouse_release_signal(QMouseEvent *event) {
+void MainWindow::mouse_release(QMouseEvent *event) {
 	Q_UNUSED(event);
 
 	if(_dragging_legend) {
@@ -108,8 +109,11 @@ void MainWindow::before_replot() {
 
 void MainWindow::export_as_pdf() {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Export to..."), "", tr("PDF files(*.pdf)"));
+	if(filename.size() > 0) write_to_pdf(filename);
+}
 
-	if(filename.size() > 0) _plot->savePdf(filename);
+void MainWindow::write_to_pdf(QString filename) {
+	_plot->savePdf(filename);
 }
 
 void MainWindow::data_import() {
@@ -118,9 +122,7 @@ void MainWindow::data_import() {
 	if(r == QDialog::Accepted) {
 		ImportDatasetResult res = import_dataset->get_options();
 		bool autoscale = res.autoscale.compare("None", Qt::CaseInsensitive);
-		dg::Dataset new_dataset = DatasetFactory::build_dataset(res.filename);
-		add_plot(new_dataset, autoscale);
-		_plot->replot();
+		_data_manager->add_datasets_from_file(res.filename, autoscale);
 	}
 }
 
