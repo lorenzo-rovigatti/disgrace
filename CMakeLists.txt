@@ -28,13 +28,16 @@ set(SOURCES
 	src/Data/Dataset.cpp
 	src/Data/DataManager.cpp
 	src/Commands/Legend.cpp
+	src/Commands/Axis.cpp
 	src/Dialogs/ImportDataset.cpp
+	src/Dialogs/SetAppearance.cpp
 	src/AgrParser/AgrFile.cpp
 )
 
 set(UI_SOURCES
 	src/MainWindow.ui
 	src/Dialogs/ImportDataset.ui
+	src/Dialogs/SetAppearance.ui
 )
 
 qt5_wrap_ui(UI_GENERATED_HEADERS ${UI_SOURCES})

@@ -37,7 +37,9 @@ public:
 	void toggle_drag_legend(bool);
 	void export_as_pdf();
 	void data_import();
+	void set_appearance();
 
+	void axis_double_click(QCPAxis *, QCPAxis::SelectablePart);
 	void mouse_move(QMouseEvent *event);
 	void mouse_press(QMouseEvent *event);
 	void mouse_release(QMouseEvent *event);

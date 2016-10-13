@@ -9,7 +9,10 @@
 #include "ui_MainWindow.h"
 
 #include "Dialogs/ImportDataset.h"
+#include "Dialogs/SetAppearance.h"
+
 #include "Commands/Legend.h"
+#include "Commands/Axis.h"
 
 namespace dg {
 
@@ -28,11 +31,13 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) : QMainWindo
 	QObject::connect(_ui->action_toggle_drag_legend, &QAction::triggered, this, &MainWindow::toggle_drag_legend);
 	QObject::connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
 	QObject::connect(_ui->action_data_import, &QAction::triggered, this, &MainWindow::data_import);
+	QObject::connect(_ui->action_set_appearance, &QAction::triggered, this, &MainWindow::set_appearance);
 
 	QObject::connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::mouse_move);
 	QObject::connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::mouse_press);
 	QObject::connect(_plot, &QCustomPlot::mouseRelease, this, &MainWindow::mouse_release);
 	QObject::connect(_plot, &QCustomPlot::beforeReplot, this, &MainWindow::before_replot);
+	QObject::connect(_plot, &QCustomPlot::axisDoubleClick, this, &MainWindow::axis_double_click);
 
 	const QStringList args = parser->positionalArguments();
 	qDebug() << "Passed in" << args.size() << "file(s)";
@@ -97,7 +102,7 @@ void MainWindow::mouse_release(QMouseEvent *event) {
 
 	if(_dragging_legend) {
 		_dragging_legend = false;
-		_undo_stack->push(new dg::MoveLegendCommand(_plot, _plot->axisRect()->insetLayout(), _old_legend_pos));
+		_undo_stack->push(new MoveLegendCommand(_plot, _plot->axisRect()->insetLayout(), _old_legend_pos));
 	}
 }
 
@@ -123,6 +128,24 @@ void MainWindow::data_import() {
 		ImportDatasetResult res = import_dataset->get_options();
 		bool autoscale = res.autoscale.compare("None", Qt::CaseInsensitive);
 		_data_manager->add_datasets_from_file(res.filename, autoscale);
+	}
+}
+
+void MainWindow::set_appearance() {
+	SetAppearance *set_appearance = new SetAppearance(this);
+	int r = set_appearance->exec();
+	if(r == QDialog::Accepted) {
+
+	}
+}
+
+void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) {
+	bool ok;
+	QString new_label = QInputDialog::getText(this, "disgrace", tr("New axis label:"), QLineEdit::Normal, axis->label(), &ok);
+	if(ok) {
+		AxisAppearance new_app;
+		new_app.label = new_label;
+		_undo_stack->push(new AxisAppearanceCommand(_plot, axis, new_app));
 	}
 }
 

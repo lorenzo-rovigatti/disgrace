@@ -39,21 +39,14 @@
      </property>
      <addaction name="action_export_as_PDF"/>
     </widget>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
+    <addaction name="action_new"/>
+    <addaction name="action_open"/>
+    <addaction name="action_save"/>
     <addaction name="action_save_as"/>
     <addaction name="separator"/>
     <addaction name="menuExport_as"/>
     <addaction name="separator"/>
     <addaction name="action_exit"/>
-   </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>Legend</string>
-    </property>
-    <addaction name="action_toggle_legend"/>
-    <addaction name="action_toggle_drag_legend"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -68,10 +61,24 @@
     </property>
     <addaction name="action_data_import"/>
    </widget>
+   <widget class="QMenu" name="menuPlot">
+    <property name="title">
+     <string>Plot</string>
+    </property>
+    <widget class="QMenu" name="menu_legend">
+     <property name="title">
+      <string>Legend</string>
+     </property>
+     <addaction name="action_toggle_drag_legend"/>
+     <addaction name="action_toggle_legend"/>
+    </widget>
+    <addaction name="action_set_appearance"/>
+    <addaction name="menu_legend"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuData"/>
-   <addaction name="menuView"/>
+   <addaction name="menuPlot"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -87,17 +94,17 @@
    <addaction name="action_toggle_range_dragging"/>
    <addaction name="action_toggle_range_zooming"/>
   </widget>
-  <action name="actionNew">
+  <action name="action_new">
    <property name="text">
     <string>&amp;New</string>
    </property>
   </action>
-  <action name="actionOpen">
+  <action name="action_open">
    <property name="text">
     <string>&amp;Open...</string>
    </property>
   </action>
-  <action name="actionSave">
+  <action name="action_save">
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -174,6 +181,16 @@
   <action name="action_data_import">
    <property name="text">
     <string>Import...</string>
+   </property>
+  </action>
+  <action name="action_set_appearance">
+   <property name="text">
+    <string>Set appearance...</string>
+   </property>
+  </action>
+  <action name="actionProva">
+   <property name="text">
+    <string>prova</string>
    </property>
   </action>
  </widget>

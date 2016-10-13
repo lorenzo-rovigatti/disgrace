@@ -5,10 +5,10 @@
  *      Author: rovigattil
  */
 
-#ifndef SRC_COMMANDS_LEGEND_H_
-#define SRC_COMMANDS_LEGEND_H_
+#ifndef COMMANDS_LEGEND_H_
+#define COMMANDS_LEGEND_H_
 
-#include <qundostack.h>
+#include <QUndoStack>
 #include "../qcustomplot/qcustomplot.h"
 
 namespace dg {
@@ -38,4 +38,4 @@ private:
 
 } /* namespace dg */
 
-#endif /* SRC_COMMANDS_LEGEND_H_ */
+#endif /* COMMANDS_LEGEND_H_ */
