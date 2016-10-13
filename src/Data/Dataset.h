@@ -10,10 +10,13 @@
 
 #include <QVector>
 #include <QString>
+#include <QObject>
 
 namespace dg {
 
-class Dataset {
+class Dataset: public QObject {
+Q_OBJECT
+
 private:
 	QString _name;
 public:
@@ -22,8 +25,14 @@ public:
 
 	QVector<double> x, y, z, dx, dy, dz;
 
-	QString name() { return _name; }
 	void set_name(QString name);
+	void commit_data_changes();
+
+	QString name() { return _name; }
+	bool empty() { return x.size() == 0; }
+
+signals:
+	void data_changed(Dataset *);
 };
 
 } /* namespace dg */
