@@ -23,7 +23,7 @@ public:
 	DataManager(QCustomPlot *plot);
 	virtual ~DataManager();
 
-	void add_datasets_from_file(QString filename, bool rescale);
+	void add_datasets_from_file(QString filename, bool rescale_x, bool rescale_y);
 
 public slots:
 	void update_graph_data(Dataset *);

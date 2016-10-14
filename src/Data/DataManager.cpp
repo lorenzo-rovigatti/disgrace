@@ -68,7 +68,7 @@ Dataset *DataManager::_parse_next_dataset(QFile &input) {
 	return new_ds;
 }
 
-void DataManager::add_datasets_from_file(QString filename, bool rescale) {
+void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool rescale_y) {
 	QFile input(filename);
 	if(!input.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		qCritical() << "File" << filename << "is not readable";
@@ -89,7 +89,14 @@ void DataManager::add_datasets_from_file(QString filename, bool rescale) {
 		_datasets[curr_dataset] = new_graph;
 	}
 
-	if(rescale) _plot->rescaleAxes(true);
+	if(rescale_x) {
+		_plot->xAxis->rescale();
+		_plot->xAxis2->rescale();
+	}
+	if(rescale_y) {
+		_plot->yAxis->rescale();
+		_plot->yAxis2->rescale();
+	}
 	_plot->replot();
 }
 

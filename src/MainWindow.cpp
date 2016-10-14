@@ -8,19 +8,20 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "Dialogs/ImportDataset.h"
-#include "Dialogs/SetAppearance.h"
-
 #include "Commands/Legend.h"
 #include "Commands/Axis.h"
 
 namespace dg {
 
-MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) : QMainWindow(parent), _ui(new Ui::MainWindow), _toggle_drag_legend(false), _dragging_legend(false) {
+MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
+		QMainWindow(parent), _ui(new Ui::MainWindow),
+		_toggle_drag_legend(false), _dragging_legend(false) {
 	_ui->setupUi(this);
 
 	_plot = _ui->custom_plot;
 	_data_manager = new DataManager(_plot);
+	_import_dataset_dialog = new ImportDataset(this);
+	_set_appearance_dialog = new SetAppearance(this);
 
 	_initialise_undo_stack();
 	_initialise_custom_plot();
@@ -30,8 +31,9 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) : QMainWindo
 	QObject::connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
 	QObject::connect(_ui->action_toggle_drag_legend, &QAction::triggered, this, &MainWindow::toggle_drag_legend);
 	QObject::connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
-	QObject::connect(_ui->action_data_import, &QAction::triggered, this, &MainWindow::data_import);
-	QObject::connect(_ui->action_set_appearance, &QAction::triggered, this, &MainWindow::set_appearance);
+	QObject::connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
+	QObject::connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
+	QObject::connect(_ui->action_set_appearance, &QAction::triggered, _set_appearance_dialog, &SetAppearance::show);
 
 	QObject::connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::mouse_move);
 	QObject::connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::mouse_press);
@@ -43,7 +45,7 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) : QMainWindo
 	qDebug() << "Passed in" << args.size() << "file(s)";
 
 	foreach(QString filename, args) {
-		_data_manager->add_datasets_from_file(filename, true);
+		_data_manager->add_datasets_from_file(filename, true, true);
 	}
 }
 
@@ -52,6 +54,8 @@ MainWindow::~MainWindow() {
 	delete _data_manager;
 	delete _undo_view;
 	delete _undo_stack;
+	delete _import_dataset_dialog;
+	delete _set_appearance_dialog;
 }
 
 void MainWindow::toggle_range_dragging(bool val) {
@@ -121,22 +125,12 @@ void MainWindow::write_to_pdf(QString filename) {
 	_plot->savePdf(filename);
 }
 
-void MainWindow::data_import() {
-	ImportDataset *import_dataset = new ImportDataset(this);
-	int r = import_dataset->exec();
-	if(r == QDialog::Accepted) {
-		ImportDatasetResult res = import_dataset->get_options();
-		bool autoscale = res.autoscale.compare("None", Qt::CaseInsensitive);
-		_data_manager->add_datasets_from_file(res.filename, autoscale);
-	}
-}
+void MainWindow::import_datasets() {
+	ImportDatasetResult res = _import_dataset_dialog->get_options();
+	bool rescale_x = res.autoscale.contains('X');;
+	bool rescale_y = res.autoscale.contains('Y');;
 
-void MainWindow::set_appearance() {
-	SetAppearance *set_appearance = new SetAppearance(this);
-	int r = set_appearance->exec();
-	if(r == QDialog::Accepted) {
-
-	}
+	_data_manager->add_datasets_from_file(res.filename, rescale_x, rescale_y);
 }
 
 void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) {

@@ -24,13 +24,18 @@ public:
 
 	ImportDatasetResult get_options() { return _options; }
 
-	// Slots
+public slots:
 	void select_import_file();
+	void start_import();
 	void done(int r)  Q_DECL_OVERRIDE;
+
+signals:
+	void import_ready();
 
 private:
 	ImportDatasetResult _options;
 	Ui::ImportDataset *_ui;
+	bool _is_error;
 };
 
 } /* namespace dg */
