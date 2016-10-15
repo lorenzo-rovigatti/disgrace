@@ -20,17 +20,6 @@ MoveLegendCommand::~MoveLegendCommand() {
 
 }
 
-bool MoveLegendCommand::mergeWith(const QUndoCommand *command) {
-	return false;
-
-	const MoveLegendCommand *moveCommand = static_cast<const MoveLegendCommand *>(command);
-	_new_pos = _inset_layout->insetRect(0).topLeft();
-
-	setText(_get_formatted_text(_old_pos, _new_pos));
-
-	return true;
-}
-
 void MoveLegendCommand::undo() {
 	QRectF rect = _inset_layout->insetRect(0);
 	rect.moveTopLeft(_old_pos);

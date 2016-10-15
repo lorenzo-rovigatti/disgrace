@@ -9,13 +9,10 @@
 #define COMMANDS_LEGEND_H_
 
 #include <QUndoStack>
+#include "defs.h"
 #include "../qcustomplot/qcustomplot.h"
 
 namespace dg {
-
-enum command_ids {
-	MOVE_LEGEND_ID = 1
-};
 
 class MoveLegendCommand: public QUndoCommand {
 public:
@@ -24,8 +21,7 @@ public:
 
 	void undo() Q_DECL_OVERRIDE;
 	void redo() Q_DECL_OVERRIDE;
-	bool mergeWith(const QUndoCommand *command) Q_DECL_OVERRIDE;
-	int id() const Q_DECL_OVERRIDE { return MOVE_LEGEND_ID; }
+	int id() const Q_DECL_OVERRIDE { return MOVE_LEGEND; }
 
 private:
 	QString _get_formatted_text(QPointF &old_pos, QPointF &new_pos);

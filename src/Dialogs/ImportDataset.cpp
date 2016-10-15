@@ -40,7 +40,7 @@ void ImportDataset::start_import() {
 	_options.autoscale = _ui->cb_autoscale->currentText();
 	_is_error = false;
 
-	emit import_ready();
+	emit import_ready(_options);
 }
 
 void ImportDataset::select_import_file() {

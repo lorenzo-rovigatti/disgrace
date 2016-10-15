@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>20</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -35,7 +35,7 @@
     </property>
     <widget class="QMenu" name="menuExport_as">
      <property name="title">
-      <string>Export as</string>
+      <string>E&amp;xport as</string>
      </property>
      <addaction name="action_export_as_PDF"/>
     </widget>
@@ -67,7 +67,7 @@
     </property>
     <widget class="QMenu" name="menu_legend">
      <property name="title">
-      <string>Legend</string>
+      <string>&amp;Legend</string>
      </property>
      <addaction name="action_toggle_drag_legend"/>
      <addaction name="action_toggle_legend"/>
@@ -91,8 +91,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_toggle_range_dragging"/>
-   <addaction name="action_toggle_range_zooming"/>
+   <addaction name="action_toggle_axis_dragging"/>
   </widget>
   <action name="action_new">
    <property name="text">
@@ -119,15 +118,15 @@
     <string>&amp;Exit</string>
    </property>
   </action>
-  <action name="action_toggle_range_dragging">
+  <action name="action_toggle_axis_dragging">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Toggle range dragging</string>
+    <string>Toggle axis dragging</string>
    </property>
    <property name="toolTip">
-    <string>Enable/disable the direct manipulation of the axes ranges by mouse dragging</string>
+    <string>Enable/disable the direct manipulation of the axes ranges</string>
    </property>
   </action>
   <action name="action_toggle_range_zooming">
@@ -143,7 +142,7 @@
   </action>
   <action name="action_export_as_PDF">
    <property name="text">
-    <string>PDF...</string>
+    <string>&amp;PDF...</string>
    </property>
   </action>
   <action name="action_toggle_legend">
@@ -151,7 +150,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Toggle legend</string>
+    <string>&amp;Toggle legend</string>
    </property>
   </action>
   <action name="action_toggle_drag_legend">
@@ -159,7 +158,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Drag legend</string>
+    <string>&amp;Drag legend</string>
    </property>
    <property name="toolTip">
     <string>Make the legend draggable</string>
@@ -170,22 +169,22 @@
   </action>
   <action name="action_undo">
    <property name="text">
-    <string>Undo</string>
+    <string>&amp;Undo</string>
    </property>
   </action>
   <action name="action_redo">
    <property name="text">
-    <string>Redo</string>
+    <string>&amp;Redo</string>
    </property>
   </action>
   <action name="action_data_import">
    <property name="text">
-    <string>Import...</string>
+    <string>&amp;Import...</string>
    </property>
   </action>
   <action name="action_set_appearance">
    <property name="text">
-    <string>Set appearance...</string>
+    <string>&amp;Set appearance...</string>
    </property>
   </action>
   <action name="actionProva">

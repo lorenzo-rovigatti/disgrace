@@ -30,7 +30,7 @@ public slots:
 	void done(int r)  Q_DECL_OVERRIDE;
 
 signals:
-	void import_ready();
+	void import_ready(ImportDatasetResult &);
 
 private:
 	ImportDatasetResult _options;

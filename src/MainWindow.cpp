@@ -9,7 +9,6 @@
 #include "ui_MainWindow.h"
 
 #include "Commands/Legend.h"
-#include "Commands/Axis.h"
 
 namespace dg {
 
@@ -26,8 +25,7 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	_initialise_undo_stack();
 	_initialise_custom_plot();
 
-	QObject::connect(_ui->action_toggle_range_dragging, &QAction::toggled, this, &MainWindow::toggle_range_dragging);
-	QObject::connect(_ui->action_toggle_range_zooming, &QAction::toggled, this, &MainWindow::toggle_range_zooming);
+	QObject::connect(_ui->action_toggle_axis_dragging, &QAction::toggled, this, &MainWindow::toggle_axis_dragging);
 	QObject::connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
 	QObject::connect(_ui->action_toggle_drag_legend, &QAction::triggered, this, &MainWindow::toggle_drag_legend);
 	QObject::connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
@@ -58,13 +56,19 @@ MainWindow::~MainWindow() {
 	delete _set_appearance_dialog;
 }
 
-void MainWindow::toggle_range_dragging(bool val) {
-	qDebug() << "Toggling the range dragging to" << val;
-	_plot->setInteraction(QCP::iRangeDrag, val);
-}
+void MainWindow::toggle_axis_dragging(bool val) {
+	if(val) {
+		_old_ranges.ranges.clear();
+		foreach(QCPAxis *axis, _plot->axisRect()->axes()) {
+			_old_ranges.ranges[axis] = axis->range();
+		}
+	}
+	else {
+		_undo_stack->push(new AxisDraggingCommand(_plot, _old_ranges));
+	}
 
-void MainWindow::toggle_range_zooming(bool val) {
-	qDebug() << "Toggling the range zooming to" << val;
+	qDebug() << "Toggling the axis dragging to" << val;
+	_plot->setInteraction(QCP::iRangeDrag, val);
 	_plot->setInteraction(QCP::iRangeZoom, val);
 }
 
@@ -125,8 +129,7 @@ void MainWindow::write_to_pdf(QString filename) {
 	_plot->savePdf(filename);
 }
 
-void MainWindow::import_datasets() {
-	ImportDatasetResult res = _import_dataset_dialog->get_options();
+void MainWindow::import_datasets(ImportDatasetResult &res) {
 	bool rescale_x = res.autoscale.contains('X');;
 	bool rescale_y = res.autoscale.contains('Y');;
 

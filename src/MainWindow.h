@@ -17,6 +17,8 @@
 #include "Dialogs/ImportDataset.h"
 #include "Dialogs/SetAppearance.h"
 
+#include "Commands/Axis.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -33,12 +35,11 @@ public:
 	void write_to_pdf(QString);
 
 public slots:
-	void toggle_range_dragging(bool);
-	void toggle_range_zooming(bool);
+	void toggle_axis_dragging(bool);
 	void toggle_legend(bool);
 	void toggle_drag_legend(bool);
 	void export_as_pdf();
-	void import_datasets();
+	void import_datasets(ImportDatasetResult &);
 
 	void axis_double_click(QCPAxis *, QCPAxis::SelectablePart);
 	void mouse_move(QMouseEvent *event);
@@ -62,6 +63,7 @@ private:
 	DataManager *_data_manager;
 	ImportDataset *_import_dataset_dialog;
 	SetAppearance *_set_appearance_dialog;
+	AxisRanges _old_ranges;
 };
 
 } /* namespace dg */
