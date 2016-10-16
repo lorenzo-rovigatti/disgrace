@@ -29,6 +29,7 @@ set(SOURCES
 	src/Data/DataManager.cpp
 	src/Commands/Legend.cpp
 	src/Commands/Axis.cpp
+	src/Commands/Set.cpp
 	src/Dialogs/ImportDataset.cpp
 	src/Dialogs/SetAppearance.cpp
 	src/AgrParser/AgrFile.cpp

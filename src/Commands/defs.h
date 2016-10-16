@@ -12,7 +12,8 @@ namespace dg {
 
 enum COMMAND_IDS {
 	MOVE_LEGEND = 1,
-	AXIS_APPEARANCE = 2
+	AXIS_APPEARANCE = 2,
+	SET_APPEARANCE = 3
 };
 
 } /* namespace dg */

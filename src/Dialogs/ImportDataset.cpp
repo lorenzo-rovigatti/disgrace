@@ -11,15 +11,15 @@ ImportDataset::ImportDataset(QWidget *parent) :
 	_ui->setupUi(this);
 
 	QObject::connect(_ui->button_choose_file, &QPushButton::clicked, this, &ImportDataset::select_import_file);
-	QObject::connect(_ui->button_box->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &ImportDataset::start_import);
-	QObject::connect(_ui->button_box->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, &ImportDataset::start_import);
+	QObject::connect(_ui->button_box->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &ImportDataset::begin_import);
+	QObject::connect(_ui->button_box->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, &ImportDataset::begin_import);
 }
 
 ImportDataset::~ImportDataset() {
 	delete _ui;
 }
 
-void ImportDataset::start_import() {
+void ImportDataset::begin_import() {
 	_is_error = true;
 	QString filename(_ui->line_chosen_file->text());
 

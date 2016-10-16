@@ -31,7 +31,7 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	QObject::connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
 	QObject::connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
 	QObject::connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
-	QObject::connect(_ui->action_set_appearance, &QAction::triggered, _set_appearance_dialog, &SetAppearance::show);
+	QObject::connect(_ui->action_set_appearance, &QAction::triggered, this, &MainWindow::show_set_appearance);
 
 	QObject::connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::mouse_move);
 	QObject::connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::mouse_press);
@@ -134,6 +134,12 @@ void MainWindow::import_datasets(ImportDatasetResult &res) {
 	bool rescale_y = res.autoscale.contains('Y');;
 
 	_data_manager->add_datasets_from_file(res.filename, rescale_x, rescale_y);
+}
+
+void MainWindow::show_set_appearance() {
+	QList<QCPGraph *> graphs = _plot->axisRect()->graphs();
+	_set_appearance_dialog->set_graphs(graphs);
+	_set_appearance_dialog->show();
 }
 
 void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) {

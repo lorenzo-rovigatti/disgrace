@@ -26,7 +26,7 @@ public:
 
 public slots:
 	void select_import_file();
-	void start_import();
+	void begin_import();
 	void done(int r)  Q_DECL_OVERRIDE;
 
 signals:
