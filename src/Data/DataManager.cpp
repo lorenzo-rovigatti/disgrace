@@ -9,7 +9,9 @@
 
 namespace dg {
 
-DataManager::DataManager(QCustomPlot *plot): _plot(plot) {
+DataManager::DataManager(QCustomPlot *plot, QObject *parent):
+		QAbstractTableModel(parent),
+		_plot(plot) {
 	_default_pen.setWidth(2);
 
 	_default_colors.push_back(Qt::black);
@@ -79,7 +81,7 @@ void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool 
 		Dataset *curr_dataset = _parse_next_dataset(input);
 		curr_dataset->set_name(filename);
 
-		QCPGraph *new_graph = _plot->addGraph();
+		QCPCurve *new_graph = new QCPCurve(_plot->xAxis, _plot->yAxis);
 		new_graph->setPen(_get_next_pen());
 		new_graph->setData(curr_dataset->x, curr_dataset->y);
 		new_graph->setName(curr_dataset->name());
@@ -87,6 +89,7 @@ void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool 
 
 		QObject::connect(curr_dataset, &Dataset::data_changed, this, &DataManager::update_graph_data);
 		_datasets[curr_dataset] = new_graph;
+		_sorted_datasets.push_back(curr_dataset);
 	}
 
 	if(rescale_x) {
@@ -102,16 +105,53 @@ void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool 
 
 void DataManager::update_graph_data(Dataset *ds) {
 	if(_datasets.contains(ds)) {
-		QCPGraph *associated_graph = static_cast<QCPGraph *>(_datasets.value(ds));
+		QCPCurve *associated_graph = static_cast<QCPCurve *>(_datasets.value(ds));
 		if(!associated_graph) {
-			qCritical() << "The QCPAbstractPlottable pointer associated to a dataset does not point to a QCPGraph object";
+			qCritical() << "The QCPAbstractPlottable pointer associated to a dataset does not point to a QCPCurve object";
 			return;
 		}
 
-		qDebug() << ds->x[0];
 		associated_graph->setData(ds->x, ds->y);
 		_plot->replot();
 	}
+}
+
+int DataManager::rowCount(const QModelIndex& parent) const {
+	return _datasets.size();
+}
+
+int DataManager::columnCount(const QModelIndex& parent) const {
+	return 2;
+}
+
+Qt::ItemFlags DataManager::flags(const QModelIndex &index) const {
+	if (!index.isValid()) return Qt::ItemIsEnabled;
+
+	return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+}
+
+QVariant DataManager::data(const QModelIndex& index, int role) const {
+	if(!index.isValid()) return QVariant();
+	if(index.row() >= _datasets.size() || index.row() < 0) return QVariant();
+
+	int n_set = index.row();
+	QVariant res;
+	QCPCurve *graph = static_cast<QCPCurve *>(_datasets[_sorted_datasets[n_set]]);
+
+	if(role == Qt::DisplayRole || role == Qt::EditRole) {
+		switch(index.column()) {
+		case 0:
+			res = tr("Set %1").arg(n_set + 1);
+			break;
+		case 1:
+			res = graph->name();
+			break;
+		default:
+			qCritical() << "The DataManager model has only 2 columns";
+		}
+	}
+
+	return res;
 }
 
 QPen DataManager::_get_next_pen() {

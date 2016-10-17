@@ -65,6 +65,9 @@
        <property name="text">
         <string>Load as</string>
        </property>
+       <property name="buddy">
+        <cstring>cb_load_as</cstring>
+       </property>
       </widget>
      </item>
      <item row="3" column="1">
@@ -95,6 +98,9 @@
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Autoscale on</string>
+       </property>
+       <property name="buddy">
+        <cstring>cb_autoscale</cstring>
        </property>
       </widget>
      </item>

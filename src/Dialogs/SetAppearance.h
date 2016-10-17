@@ -10,14 +10,14 @@ class SetAppearance;
 
 namespace dg {
 
+class DataManager;
+
 class SetAppearance: public QDialog {
 Q_OBJECT
 
 public:
-	explicit SetAppearance(QWidget *parent = 0);
+	explicit SetAppearance(DataManager *dm, QWidget *parent = 0);
 	~SetAppearance();
-
-	void set_graphs(QList<QCPGraph *> &);
 
 public slots:
 	void begin_change_appearance();
@@ -27,7 +27,7 @@ signals:
 
 private:
 	Ui::SetAppearance *_ui;
-	QList<QCPGraph *> _graphs;
+	QDataWidgetMapper *_mapper;
 };
 
 } /* namespace dg */
