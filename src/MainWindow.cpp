@@ -25,6 +25,8 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	_initialise_undo_stack();
 	_initialise_custom_plot();
 
+	_plot->setFocus();
+
 	QObject::connect(_ui->action_toggle_axis_dragging, &QAction::toggled, this, &MainWindow::toggle_axis_dragging);
 	QObject::connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
 	QObject::connect(_ui->action_toggle_drag_legend, &QAction::triggered, this, &MainWindow::toggle_drag_legend);
@@ -32,6 +34,8 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	QObject::connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
 	QObject::connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
 	QObject::connect(_ui->action_set_appearance, &QAction::triggered, _set_appearance_dialog, &SetAppearance::show);
+	QObject::connect(_data_manager, &DataManager::dataChanged, this, &MainWindow::replot);
+	QObject::connect(_data_manager, &DataManager::new_command, this, &MainWindow::push_command);
 
 	QObject::connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::mouse_move);
 	QObject::connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::mouse_press);
@@ -120,6 +124,14 @@ void MainWindow::before_replot() {
 	_plot->legend->setMaximumSize(_plot->legend->minimumSizeHint());
 }
 
+void MainWindow::replot() {
+	_plot->replot();
+}
+
+void MainWindow::push_command(QUndoCommand *nc) {
+	_undo_stack->push(nc);
+}
+
 void MainWindow::export_as_pdf() {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Export to..."), "", tr("PDF files(*.pdf)"));
 	if(filename.size() > 0) write_to_pdf(filename);
@@ -167,10 +179,12 @@ void MainWindow::_initialise_axis(QCPAxis *axis) {
 void MainWindow::_initialise_undo_stack() {
 	_undo_stack = new QUndoStack();
 
-	_undo_view = new QUndoView(_undo_stack);
+	_undo_view = new QUndoView(_undo_stack, this);
 	_undo_view->setWindowTitle(tr("Command List"));
 	_undo_view->show();
 	_undo_view->setAttribute(Qt::WA_QuitOnClose, false);
+	_undo_view->setMaximumWidth(200);
+	_ui->horizontalLayout->addWidget(_undo_view);
 
 	_ui->action_undo->setShortcuts(QKeySequence::Undo);
 	QObject::connect(_ui->action_undo, &QAction::triggered, _undo_stack, &QUndoStack::undo);

@@ -8,12 +8,21 @@
 #ifndef COMMANDS_DEFS_H_
 #define COMMANDS_DEFS_H_
 
+#include <QPen>
+#include "../Data/Dataset.h"
+
 namespace dg {
 
 enum COMMAND_IDS {
 	MOVE_LEGEND = 1,
 	AXIS_APPEARANCE = 2,
 	SET_APPEARANCE = 3
+};
+
+struct SetAppearanceDetails {
+	Dataset *dataset;
+	QString legend;
+	QPen pen;
 };
 
 } /* namespace dg */

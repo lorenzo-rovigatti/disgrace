@@ -47,6 +47,17 @@ public slots:
 	void mouse_release(QMouseEvent *event);
 	void before_replot();
 
+	/** Calls QCustomPlot::replot
+	 *
+	 */
+	void replot();
+
+	/** Adds the passed QUndoCommand to the undo stack
+	 *
+	 * @param nc the new command to be added to the undo stack
+	 */
+	void push_command(QUndoCommand *nc);
+
 private:
 	void _initialise_axis(QCPAxis *);
 	void _initialise_custom_plot();

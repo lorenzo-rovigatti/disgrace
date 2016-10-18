@@ -14,14 +14,21 @@
 
 namespace dg {
 
+class DataManager;
+
 class SetAppearanceCommand: public QUndoCommand {
 public:
-	SetAppearanceCommand(QUndoCommand *parent = 0);
+	SetAppearanceCommand(DataManager *dm, SetAppearanceDetails &old_appearance, SetAppearanceDetails &new_appearance, QUndoCommand *parent = 0);
 	virtual ~SetAppearanceCommand();
 
 	void undo() Q_DECL_OVERRIDE;
 	void redo() Q_DECL_OVERRIDE;
 	int id() const Q_DECL_OVERRIDE { return SET_APPEARANCE; }
+
+private:
+	DataManager *_dm;
+	SetAppearanceDetails _old_appearance;
+	SetAppearanceDetails _new_appearance;
 };
 
 } /* namespace dg */

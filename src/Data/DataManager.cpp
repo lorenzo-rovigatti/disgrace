@@ -23,6 +23,7 @@ DataManager::DataManager(QCustomPlot *plot, QObject *parent):
 	_default_colors.push_back(QColor("magenta"));
 
 	_curr_color = _default_colors.begin();
+	_new_appearance.dataset = NULL;
 }
 
 DataManager::~DataManager() {
@@ -82,7 +83,7 @@ void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool 
 		curr_dataset->set_name(filename);
 
 		QCPCurve *new_graph = new QCPCurve(_plot->xAxis, _plot->yAxis);
-		new_graph->setPen(_get_next_pen());
+		new_graph->setPen(_next_pen());
 		new_graph->setData(curr_dataset->x, curr_dataset->y);
 		new_graph->setName(curr_dataset->name());
 		new_graph->addToLegend();
@@ -121,7 +122,7 @@ int DataManager::rowCount(const QModelIndex& parent) const {
 }
 
 int DataManager::columnCount(const QModelIndex& parent) const {
-	return 2;
+	return 3;
 }
 
 Qt::ItemFlags DataManager::flags(const QModelIndex &index) const {
@@ -141,20 +142,80 @@ QVariant DataManager::data(const QModelIndex& index, int role) const {
 	if(role == Qt::DisplayRole || role == Qt::EditRole) {
 		switch(index.column()) {
 		case 0:
-			res = tr("Set %1").arg(n_set + 1);
+			res = tr("Set %1 [%2]").arg(n_set).arg(graph->dataCount());
 			break;
 		case 1:
 			res = graph->name();
 			break;
+		case 2:
+			res = QString::number(graph->lineStyle());
+			break;
 		default:
-			qCritical() << "The DataManager model has only 2 columns";
+			qCritical() << "The DataManager model has only" << columnCount() <<  "columns";
 		}
 	}
 
 	return res;
 }
 
-QPen DataManager::_get_next_pen() {
+bool DataManager::setData(const QModelIndex &index, const QVariant &value, int role) {
+	if(index.isValid() && role == Qt::EditRole) {
+		if(index.row() >= _datasets.size() || index.row() < 0) return false;
+		int n_set = index.row();
+		Dataset *dataset = _sorted_datasets[n_set];
+		QCPCurve *graph = static_cast<QCPCurve *>(_datasets[dataset]);
+
+		if(dataset != _new_appearance.dataset) _old_appearance = _new_appearance = _current_appearance(dataset);
+
+		switch(index.column()) {
+		case 0:
+			break;
+		case 1:
+			_new_appearance.legend = value.toString();
+			break;
+		case 2:
+			// we need to explicitly set the old appearance's pen properties because of QPen implicit sharing facilities
+			_old_appearance.pen.setStyle(graph->pen().style());
+			_new_appearance.pen.setStyle((Qt::PenStyle) value.toString().toInt());
+			break;
+		default:
+			qCritical() << "The DataManager model has only" << columnCount() <<  "columns";
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+void DataManager::emit_dataChanged(Dataset *dataset) {
+	int n_set = _sorted_datasets.indexOf(dataset);
+	if(n_set == -1) qCritical() << "The dataset involved in the change cannot be found in the list of datasets";
+	else {
+		QModelIndex index = createIndex(n_set, 0);
+		emit dataChanged(index, index);
+	}
+}
+
+bool DataManager::submit() {
+	SetAppearanceCommand *nc = new SetAppearanceCommand(this, _old_appearance, _new_appearance);
+	emit new_command(nc);
+
+	return true;
+}
+
+SetAppearanceDetails DataManager::_current_appearance(Dataset *dataset) {
+	QCPCurve *graph = static_cast<QCPCurve *>(_datasets[dataset]);
+
+	SetAppearanceDetails res;
+	res.dataset = dataset;
+	res.legend = graph->name();
+	res.pen = graph->pen();
+
+	return res;
+}
+
+QPen DataManager::_next_pen() {
 	QPen new_pen(_default_pen);
 	new_pen.setColor(*_curr_color);
 	_curr_color++;

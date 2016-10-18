@@ -20,13 +20,13 @@ public:
 	~SetAppearance();
 
 public slots:
-	void begin_change_appearance();
-
-signals:
-	void change_appearance_ready();
+	void show() Q_DECL_OVERRIDE;
 
 private:
+	void _setup_widgets();
+
 	Ui::SetAppearance *_ui;
+	DataManager *_dm;
 	QDataWidgetMapper *_mapper;
 };
 
