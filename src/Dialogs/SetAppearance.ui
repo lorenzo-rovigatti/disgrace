@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>SetAppearance</class>
  <widget class="QDialog" name="SetAppearance">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>288</width>
+    <height>546</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Set Appearance</string>
   </property>
@@ -19,41 +27,71 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="group_box_symbol_properties">
        <property name="title">
         <string>Symbol properties</string>
        </property>
+       <zorder>group_box_line_properties</zorder>
+       <zorder>group_box_line_properties</zorder>
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox_2">
+      <widget class="QGroupBox" name="group_box_line_properties">
        <property name="title">
         <string>Line properties</string>
        </property>
        <layout class="QFormLayout" name="formLayout">
         <item row="0" column="0">
-         <widget class="QLabel" name="label_3">
+         <widget class="QLabel" name="label_line_Style">
           <property name="text">
-           <string>Style</string>
+           <string>St&amp;yle</string>
           </property>
           <property name="buddy">
            <cstring>cb_line_style</cstring>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
-         <widget class="QSpinBox" name="cb_line_width"/>
-        </item>
         <item row="0" column="1">
          <widget class="QComboBox" name="cb_line_style"/>
         </item>
         <item row="1" column="0">
-         <widget class="QLabel" name="label_4">
+         <widget class="QLabel" name="label_line_width">
           <property name="text">
            <string>Width</string>
           </property>
           <property name="buddy">
-           <cstring>cb_line_width</cstring>
+           <cstring>sb_line_width</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="sb_line_width"/>
+        </item>
+        <item row="2" column="1">
+         <layout class="QHBoxLayout" name="horizontal_layout_colour">
+          <item>
+           <widget class="QLineEdit" name="line_colour">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_colour">
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_color">
+          <property name="text">
+           <string>Color</string>
           </property>
          </widget>
         </item>
@@ -67,11 +105,17 @@
      <property name="title">
       <string>Set presentation</string>
      </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
      <layout class="QFormLayout" name="formLayout_2">
       <item row="0" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="label_type">
         <property name="text">
-         <string>Type</string>
+         <string>T&amp;ype</string>
         </property>
         <property name="buddy">
          <cstring>cb_type</cstring>
@@ -94,9 +138,9 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_legend">
         <property name="text">
-         <string>Legend</string>
+         <string>&amp;Legend</string>
         </property>
         <property name="buddy">
          <cstring>line_legend</cstring>

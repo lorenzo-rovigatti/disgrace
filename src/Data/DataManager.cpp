@@ -122,7 +122,7 @@ int DataManager::rowCount(const QModelIndex& parent) const {
 }
 
 int DataManager::columnCount(const QModelIndex& parent) const {
-	return 3;
+	return 5;
 }
 
 Qt::ItemFlags DataManager::flags(const QModelIndex &index) const {
@@ -141,14 +141,20 @@ QVariant DataManager::data(const QModelIndex& index, int role) const {
 
 	if(role == Qt::DisplayRole || role == Qt::EditRole) {
 		switch(index.column()) {
-		case 0:
+		case Name:
 			res = tr("Set %1 [%2]").arg(n_set).arg(graph->dataCount());
 			break;
-		case 1:
+		case Legend:
 			res = graph->name();
 			break;
-		case 2:
-			res = QString::number(graph->lineStyle());
+		case LineStyle:
+			res = QString::number(graph->pen().style());
+			break;
+		case LineWidth:
+			res = graph->pen().width();
+			break;
+		case LineColour:
+			res = graph->pen().color().name();
 			break;
 		default:
 			qCritical() << "The DataManager model has only" << columnCount() <<  "columns";
@@ -168,15 +174,23 @@ bool DataManager::setData(const QModelIndex &index, const QVariant &value, int r
 		if(dataset != _new_appearance.dataset) _old_appearance = _new_appearance = _current_appearance(dataset);
 
 		switch(index.column()) {
-		case 0:
+		case Name:
 			break;
-		case 1:
+		case Legend:
 			_new_appearance.legend = value.toString();
 			break;
-		case 2:
+		case LineStyle:
 			// we need to explicitly set the old appearance's pen properties because of QPen implicit sharing facilities
 			_old_appearance.pen.setStyle(graph->pen().style());
 			_new_appearance.pen.setStyle((Qt::PenStyle) value.toString().toInt());
+			break;
+		case LineWidth:
+			_old_appearance.pen.setWidth(graph->pen().width());
+			_new_appearance.pen.setWidth(value.toInt());
+			break;
+		case LineColour:
+			_old_appearance.pen.setColor(graph->pen().color());
+			_new_appearance.pen.setColor(QColor(value.toString()));
 			break;
 		default:
 			qCritical() << "The DataManager model has only" << columnCount() <<  "columns";

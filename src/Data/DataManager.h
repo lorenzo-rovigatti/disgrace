@@ -22,6 +22,10 @@ Q_OBJECT;
 
 friend class SetAppearanceCommand;
 
+enum Fields {
+	Name, Legend, LineStyle, LineWidth, LineColour
+};
+
 public:
 	DataManager(QCustomPlot *plot, QObject *parent = 0);
 	virtual ~DataManager();

@@ -21,6 +21,10 @@ public:
 
 public slots:
 	void show() Q_DECL_OVERRIDE;
+	void pick_colour();
+
+protected slots:
+	void change_btn_colour_background(const QString &colour_name);
 
 private:
 	void _setup_widgets();
