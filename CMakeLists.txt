@@ -33,6 +33,9 @@ set(SOURCES
 	src/Dialogs/ImportDataset.cpp
 	src/Dialogs/SetAppearance.cpp
 	src/AgrParser/AgrFile.cpp
+	src/AgrParser/AgrRegion.cpp
+	src/AgrParser/AgrDrawingObject.cpp
+	src/AgrParser/AgrGraph.cpp
 )
 
 set(UI_SOURCES
