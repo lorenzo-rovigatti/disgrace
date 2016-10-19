@@ -24,10 +24,21 @@ SetAppearance::SetAppearance(DataManager *dm, QWidget *parent) :
 	_mapper->addMapping(_ui->sb_line_width, 3);
 	_mapper->addMapping(_ui->line_colour, 4);
 
+	// connects the list widget to the mapper, so that the letter is notified when the user changes the selected set
 	QObject::connect(_ui->list_curves->selectionModel(), &QItemSelectionModel::currentRowChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
+	QObject::connect(dm, &DataManager::dataChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
 
+	// set up the colour pickers
+	QAction *line_colour_action = _ui->line_colour->addAction(QIcon(), QLineEdit::TrailingPosition);
+	line_colour_action->setData(QVariant("pick_colour_action"));
+	connect(line_colour_action, &QAction::triggered, this, &SetAppearance::pick_colour);
 	connect(_ui->line_colour, &QLineEdit::textChanged, this, &SetAppearance::change_btn_colour_background);
-	connect(_ui->btn_colour, &QAbstractButton::clicked, this, &SetAppearance::pick_colour);
+
+	QAction *symbol_colour_action = _ui->symbol_colour->addAction(QIcon(), QLineEdit::TrailingPosition);
+	symbol_colour_action->setData(QVariant("pick_colour_action"));
+	connect(symbol_colour_action, &QAction::triggered, this, &SetAppearance::pick_colour);
+	connect(_ui->symbol_colour, &QLineEdit::textChanged, this, &SetAppearance::change_btn_colour_background);
+
 	// TODO: pressing apply and then Ok without changing anything should not push twice the same command
 	QObject::connect(_ui->button_box->button(QDialogButtonBox::Ok), &QPushButton::clicked, _mapper, &QDataWidgetMapper::submit);
 	QObject::connect(_ui->button_box->button(QDialogButtonBox::Apply), &QPushButton::clicked, _mapper, &QDataWidgetMapper::submit);
@@ -48,17 +59,35 @@ void SetAppearance::show() {
 }
 
 void SetAppearance::pick_colour() {
-	const QColor colour = QColorDialog::getColor(QColor(_ui->line_colour->text()), this, tr("Pick a colour"));
+	QAction *action = static_cast<QAction *>(QObject::sender());
+	QList<QWidget *> widgets = action->associatedWidgets();
 
-	if(colour.isValid()) {
-		_ui->line_colour->setText(colour.name());
-		change_btn_colour_background(colour.name());
+	// we need to loop over the associated widgets to find the associated QLineEdit
+	foreach(QWidget *w, widgets) {
+		QLineEdit *le = dynamic_cast<QLineEdit *>(w);
+		if(le) {
+			qDebug() << w;
+			const QColor colour = QColorDialog::getColor(QColor(le->text()), this, tr("Pick a colour"));
+			if(colour.isValid()) le->setText(colour.name());
+		}
 	}
 }
 
 void SetAppearance::change_btn_colour_background(const QString &colour_name) {
+	QLineEdit *le = dynamic_cast<QLineEdit *>(QObject::sender());
+	if(!le) {
+		qCritical() << "QObject::sender() cannot be cast to a QLineEdit *";
+		exit(1);
+	}
+
 	QString ss_text = QString("background-color: %1").arg(colour_name);
-	_ui->btn_colour->setStyleSheet(ss_text);
+	foreach(QAction *action, le->actions()) {
+		if(action->data().toString() == QString("pick_colour_action")) {
+			QPixmap pixmap(100, 100);
+			pixmap.fill(QColor(colour_name));
+			action->setIcon(QIcon(pixmap));
+		}
+	}
 }
 
 void SetAppearance::_setup_widgets() {
@@ -76,7 +105,6 @@ void SetAppearance::_setup_widgets() {
 		painter.setPen(pen);
 		painter.drawLine(2, 7, 78, 7);
 
-		qDebug() << QString::number(pen_style);
 		_ui->cb_line_style->addItem(QIcon(pix), QString::number(pen_style), pen_style);
 	}
 }

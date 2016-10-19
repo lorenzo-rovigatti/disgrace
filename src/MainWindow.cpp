@@ -67,9 +67,7 @@ void MainWindow::toggle_axis_dragging(bool val) {
 			_old_ranges.ranges[axis] = axis->range();
 		}
 	}
-	else {
-		_undo_stack->push(new AxisDraggingCommand(_plot, _old_ranges));
-	}
+	else _undo_stack->push(new AxisDraggingCommand(_plot, _old_ranges));
 
 	qDebug() << "Toggling the axis dragging to" << val;
 	_plot->setInteraction(QCP::iRangeDrag, val);
@@ -97,6 +95,11 @@ void MainWindow::mouse_move(QMouseEvent *event) {
 		_plot->replot();
 	}
 
+	// transform the mouse position to x,y coordinates and show them in the status bar
+	double x = _plot->xAxis->pixelToCoord(event->pos().x());
+	double y = _plot->yAxis->pixelToCoord(event->pos().y());
+	QString msg = QString("X, Y = [%1 , %2]").arg(x).arg(y);
+	_ui->statusbar->showMessage(msg);
 }
 
 void MainWindow::mouse_press(QMouseEvent *event) {
@@ -204,6 +207,7 @@ void MainWindow::_initialise_custom_plot() {
 	QFont legend_font("Timer New Roman", 14);
 	QCPLegend *legend = _plot->legend;
 	legend->setFont(legend_font);
+	legend->setVisible(true);
 
 	// set the placement of the legend (index 0 in the axis rect's inset layout) to not be border-aligned (default), but freely, so we can reposition it anywhere:
 	_plot->axisRect()->insetLayout()->setInsetPlacement(0, QCPLayoutInset::ipFree);
