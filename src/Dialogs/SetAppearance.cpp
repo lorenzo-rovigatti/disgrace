@@ -28,6 +28,7 @@ SetAppearance::SetAppearance(DataManager *dm, QWidget *parent) :
 
 	connect(_ui->line_colour, &QLineEdit::textChanged, this, &SetAppearance::change_btn_colour_background);
 	connect(_ui->btn_colour, &QAbstractButton::clicked, this, &SetAppearance::pick_colour);
+	// TODO: pressing apply and then Ok without changing anything should not push twice the same command
 	QObject::connect(_ui->button_box->button(QDialogButtonBox::Ok), &QPushButton::clicked, _mapper, &QDataWidgetMapper::submit);
 	QObject::connect(_ui->button_box->button(QDialogButtonBox::Apply), &QPushButton::clicked, _mapper, &QDataWidgetMapper::submit);
 }

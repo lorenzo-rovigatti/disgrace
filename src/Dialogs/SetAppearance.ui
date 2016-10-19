@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>288</width>
-    <height>546</height>
+    <width>356</width>
+    <height>473</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,8 +31,6 @@
        <property name="title">
         <string>Symbol properties</string>
        </property>
-       <zorder>group_box_line_properties</zorder>
-       <zorder>group_box_line_properties</zorder>
       </widget>
      </item>
      <item>

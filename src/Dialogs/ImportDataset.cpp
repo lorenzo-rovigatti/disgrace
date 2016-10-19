@@ -11,7 +11,6 @@ ImportDataset::ImportDataset(QWidget *parent) :
 	_ui->setupUi(this);
 
 	QObject::connect(_ui->button_choose_file, &QPushButton::clicked, this, &ImportDataset::select_import_file);
-	QObject::connect(_ui->button_box->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &ImportDataset::begin_import);
 	QObject::connect(_ui->button_box->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, &ImportDataset::begin_import);
 }
 
@@ -47,13 +46,6 @@ void ImportDataset::select_import_file() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Import from..."));
 
 	if(filename.size() > 0) _ui->line_chosen_file->setText(filename);
-}
-
-void ImportDataset::done(int r) {
-	// OK was pressed, check that there are no errors
-	if(r == QDialog::Accepted && _is_error) return;
-	// cancel was pressed
-	QDialog::done(r);
 }
 
 } /* namespace dg */
