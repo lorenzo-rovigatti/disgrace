@@ -10,12 +10,15 @@
 namespace dg {
 
 AgrRegion::AgrRegion() {
-	// TODO Auto-generated constructor stub
 
 }
 
 AgrRegion::~AgrRegion() {
-	// TODO Auto-generated destructor stub
+
+}
+
+void AgrRegion::append(QString &line) {
+	_lines.push_back(line);
 }
 
 } /* namespace dg */

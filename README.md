@@ -20,6 +20,10 @@ For now, this document will contain the list of features that I would like to im
 ## Tentative roadmap
 * Add basic set appearance management
 * Add save/load facilities
+* Add plot-wide appearance management (plot size, legend, etc.)
 * Add basic data set manipulation facilities
 * Add the possibility of having multiple plots
 
+## Acknowledgements
+
+* The agr parser is heavily based on the [xmgrace_parser.py](https://github.com/goerz/xmgrace_parser) written by [Michael Goerz](https://github.com/goerz)

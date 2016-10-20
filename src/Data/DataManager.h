@@ -11,8 +11,9 @@
 #include <QAbstractTableModel>
 #include <QMap>
 
-#include "../Commands/Set.h"
+#include "../AgrParser/AgrFile.h"
 #include "Dataset.h"
+#include "../Commands/Set.h"
 #include "../qcustomplot/qcustomplot.h"
 
 namespace dg {
@@ -40,6 +41,7 @@ public:
 	DataManager(QCustomPlot *plot, QObject *parent = 0);
 	virtual ~DataManager();
 
+	void add_datasets_from_agr(AgrFile &agr_file, bool rescale_x, bool rescale_y);
 	void add_datasets_from_file(QString filename, bool rescale_x, bool rescale_y);
 	void emit_dataChanged(Dataset *dataset);
 
@@ -65,6 +67,15 @@ private:
 	SetAppearanceDetails _current_appearance(Dataset *dataset);
 	Dataset *_parse_next_dataset(QFile &input);
 	QPen _next_pen();
+	/**
+	 * Creates a new plottable and associates it to the passed dataset.
+	 *
+	 * This methods also updates the relevant data structures.
+	 *
+	 * @param dataset
+	 * @return A pointer to the newly created plottable
+	 */
+	QCPCurve *_add_plottable(Dataset *dataset);
 
 	QCustomPlot *_plot;
 	QMap<Dataset *, QCPAbstractPlottable *> _datasets;

@@ -47,7 +47,9 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	qDebug() << "Passed in" << args.size() << "file(s)";
 
 	foreach(QString filename, args) {
-		_data_manager->add_datasets_from_file(filename, true, true);
+		AgrFile agr_file;
+		if(!agr_file.parse(filename)) _data_manager->add_datasets_from_file(filename, true, true);
+		else _data_manager->add_datasets_from_agr(agr_file, true, true);
 	}
 }
 
@@ -145,8 +147,8 @@ void MainWindow::write_to_pdf(QString filename) {
 }
 
 void MainWindow::import_datasets(ImportDatasetResult &res) {
-	bool rescale_x = res.autoscale.contains('X');;
-	bool rescale_y = res.autoscale.contains('Y');;
+	bool rescale_x = res.autoscale.contains('X');
+	bool rescale_y = res.autoscale.contains('Y');
 
 	_data_manager->add_datasets_from_file(res.filename, rescale_x, rescale_y);
 }

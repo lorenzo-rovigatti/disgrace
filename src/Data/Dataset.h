@@ -11,6 +11,7 @@
 #include <QVector>
 #include <QString>
 #include <QObject>
+#include <QMap>
 
 namespace dg {
 
@@ -19,6 +20,11 @@ Q_OBJECT
 
 private:
 	QString _name;
+	QString _type;
+	// TODO: we should not keep a copy of these in each instance...
+	QMap<QString, int> _type_to_n_column;
+	QVector<QString> _implemented_types;
+
 public:
 	Dataset();
 	virtual ~Dataset();
@@ -27,6 +33,8 @@ public:
 
 	void set_name(QString name);
 	void commit_data_changes();
+
+	void append_agr_line(QString &line);
 
 	QString name() { return _name; }
 	bool empty() { return x.size() == 0; }

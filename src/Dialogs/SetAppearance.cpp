@@ -122,7 +122,6 @@ void SetAppearance::_setup_widgets() {
 		ss.drawShape(&qp, 7, 7);
 		QIcon icon = QIcon(pix);
 
-		qDebug() << symbol_type;
 		_ui->cb_symbol_type->addItem(icon, QString::number(symbol_type), symbol_type);
 	}
 }

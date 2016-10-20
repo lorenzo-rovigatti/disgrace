@@ -45,20 +45,19 @@ Dataset *DataManager::_parse_next_dataset(QFile &input) {
 			// the regexp makes it possible to split the line in the presence of *any* whitespace
 			QStringList spl = line.split(QRegExp("\\s"));
 			if(n_columns == -1) n_columns = spl.size();
-			bool conv_ok = true;
 
 			switch(n_columns) {
 			case 1: {
 				new_ds->x.push_back(n_lines);
-				double val = spl[0].toDouble(&conv_ok);
+				double val = spl[0].toDouble();
 				new_ds->y.push_back(val);
 				break;
 			}
 			case 2:
 			default: {
-				double val = spl[0].toDouble(&conv_ok);
+				double val = spl[0].toDouble();
 				new_ds->x.push_back(val);
-				val = spl[1].toDouble(&conv_ok);
+				val = spl[1].toDouble();
 				new_ds->y.push_back(val);
 			}
 			}
@@ -71,6 +70,22 @@ Dataset *DataManager::_parse_next_dataset(QFile &input) {
 	return new_ds;
 }
 
+void DataManager::add_datasets_from_agr(AgrFile &agr_file, bool rescale_x, bool rescale_y) {
+	foreach(Dataset *curr_dataset, agr_file.datasets()) {
+		_add_plottable(curr_dataset);
+	}
+
+	if(rescale_x) {
+		_plot->xAxis->rescale();
+		_plot->xAxis2->rescale();
+	}
+	if(rescale_y) {
+		_plot->yAxis->rescale();
+		_plot->yAxis2->rescale();
+	}
+	_plot->replot();
+}
+
 void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool rescale_y) {
 	QFile input(filename);
 	if(!input.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -81,23 +96,7 @@ void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool 
 	while(!input.atEnd()) {
 		Dataset *curr_dataset = _parse_next_dataset(input);
 		curr_dataset->set_name(filename);
-
-		QCPCurve *new_graph = new QCPCurve(_plot->xAxis, _plot->yAxis);
-		QPen next_pen = _next_pen();
-		new_graph->setPen(next_pen);
-		new_graph->setData(curr_dataset->x, curr_dataset->y);
-		new_graph->setName(curr_dataset->name());
-		new_graph->addToLegend();
-
-		QCPScatterStyle ss = new_graph->scatterStyle();
-		ss.setPen(next_pen);
-		new_graph->setScatterStyle(ss);
-		// TODO: this is needed because of a bug in qcustomplot (QCPCurve::QCPCurve() does not initialise the scatter skip)
-		new_graph->setScatterSkip(0);
-
-		QObject::connect(curr_dataset, &Dataset::data_changed, this, &DataManager::update_graph_data);
-		_datasets[curr_dataset] = new_graph;
-		_sorted_datasets.push_back(curr_dataset);
+		_add_plottable(curr_dataset);
 	}
 
 	if(rescale_x) {
@@ -268,6 +267,27 @@ QPen DataManager::_next_pen() {
 	if(_curr_color == _default_colors.end()) _curr_color = _default_colors.begin();
 
 	return new_pen;
+}
+
+QCPCurve *DataManager::_add_plottable(Dataset *dataset) {
+	QCPCurve *new_graph = new QCPCurve(_plot->xAxis, _plot->yAxis);
+	QPen next_pen = _next_pen();
+	new_graph->setPen(next_pen);
+	new_graph->setData(dataset->x, dataset->y);
+	new_graph->setName(dataset->name());
+	new_graph->addToLegend();
+
+	QCPScatterStyle ss = new_graph->scatterStyle();
+	ss.setPen(next_pen);
+	new_graph->setScatterStyle(ss);
+	// TODO: this is needed because of a bug in qcustomplot (QCPCurve::QCPCurve() does not initialise the scatter skip)
+	new_graph->setScatterSkip(0);
+
+	QObject::connect(dataset, &Dataset::data_changed, this, &DataManager::update_graph_data);
+	_datasets[dataset] = new_graph;
+	_sorted_datasets.push_back(dataset);
+
+	return new_graph;
 }
 
 } /* namespace dg */

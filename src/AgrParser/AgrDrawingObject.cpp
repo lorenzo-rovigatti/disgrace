@@ -17,4 +17,8 @@ AgrDrawingObject::~AgrDrawingObject() {
 
 }
 
+void AgrDrawingObject::append(QString &line) {
+	_lines.push_back(line);
+}
+
 } /* namespace dg */

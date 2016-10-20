@@ -10,6 +10,7 @@
 
 #include <QString>
 #include <QVector>
+#include <QRegularExpression>
 
 #include "AgrDrawingObject.h"
 #include "AgrGraph.h"
@@ -20,17 +21,22 @@ namespace dg {
 
 class AgrFile {
 private:
-	QVector<Dataset> _datasets;
+	QVector<QString> _header_lines;
+	QVector<Dataset *> _datasets;
 	QVector<AgrGraph> _graphs;
 	QVector<AgrRegion> _regions;
 	QVector<AgrDrawingObject> _drawing_objects;
 	QString _filename;
+
+	bool _has_match(QRegularExpression &re, QString &str);
+	void _check_consistency();
 
 public:
 	AgrFile();
 	virtual ~AgrFile();
 
 	bool parse(QString filename);
+	QVector<Dataset *> &datasets() { return _datasets; }
 };
 
 } /* namespace dg */
