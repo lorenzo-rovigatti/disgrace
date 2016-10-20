@@ -18,11 +18,14 @@ SetAppearance::SetAppearance(DataManager *dm, QWidget *parent) :
 	_mapper = new QDataWidgetMapper(this);
 	_mapper->setModel(dm);
 	_mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
-	_mapper->addMapping(_ui->line_legend, 1);
+	_mapper->addMapping(_ui->line_legend, DataManager::Legend);
 	// TODO: we should set up a model for the combobox to make it possible to use currentData rather than currentText
-	_mapper->addMapping(_ui->cb_line_style, 2, "currentText");
-	_mapper->addMapping(_ui->sb_line_width, 3);
-	_mapper->addMapping(_ui->line_colour, 4);
+	_mapper->addMapping(_ui->cb_line_style, DataManager::LineStyle, "currentText");
+	_mapper->addMapping(_ui->sb_line_width, DataManager::LineWidth);
+	_mapper->addMapping(_ui->line_colour, DataManager::LineColour);
+	_mapper->addMapping(_ui->cb_symbol_type, DataManager::SymbolType);
+	_mapper->addMapping(_ui->sb_symbol_size, DataManager::SymbolSize);
+	_mapper->addMapping(_ui->symbol_colour, DataManager::SymbolColour);
 
 	// connects the list widget to the mapper, so that the letter is notified when the user changes the selected set
 	QObject::connect(_ui->list_curves->selectionModel(), &QItemSelectionModel::currentRowChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
@@ -39,8 +42,6 @@ SetAppearance::SetAppearance(DataManager *dm, QWidget *parent) :
 	connect(symbol_colour_action, &QAction::triggered, this, &SetAppearance::pick_colour);
 	connect(_ui->symbol_colour, &QLineEdit::textChanged, this, &SetAppearance::change_btn_colour_background);
 
-	// TODO: pressing apply and then Ok without changing anything should not push twice the same command
-	QObject::connect(_ui->button_box->button(QDialogButtonBox::Ok), &QPushButton::clicked, _mapper, &QDataWidgetMapper::submit);
 	QObject::connect(_ui->button_box->button(QDialogButtonBox::Apply), &QPushButton::clicked, _mapper, &QDataWidgetMapper::submit);
 }
 
@@ -106,6 +107,23 @@ void SetAppearance::_setup_widgets() {
 		painter.drawLine(2, 7, 78, 7);
 
 		_ui->cb_line_style->addItem(QIcon(pix), QString::number(pen_style), pen_style);
+	}
+
+	// symbol type
+	_ui->cb_symbol_type->setIconSize(QSize(80, 14));
+	for(int symbol_type = QCPScatterStyle::ssNone; symbol_type < QCPScatterStyle::ssPeace; symbol_type++) {
+		QCPScatterStyle ss((QCPScatterStyle::ScatterShape) symbol_type);
+		ss.setSize(10);
+		QPixmap pix(15, 15);
+		pix.fill(palette().color(QPalette::Background));
+
+		QCPPainter qp(&pix);
+		ss.applyTo(&qp, QPen(Qt::black));
+		ss.drawShape(&qp, 7, 7);
+		QIcon icon = QIcon(pix);
+
+		qDebug() << symbol_type;
+		_ui->cb_symbol_type->addItem(icon, QString::number(symbol_type), symbol_type);
 	}
 }
 

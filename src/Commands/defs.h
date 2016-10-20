@@ -22,7 +22,10 @@ enum COMMAND_IDS {
 struct SetAppearanceDetails {
 	Dataset *dataset;
 	QString legend;
-	QPen pen;
+	QPen line_pen;
+	int symbol_type;
+	int symbol_size;
+	QPen symbol_pen;
 };
 
 } /* namespace dg */

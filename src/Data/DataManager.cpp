@@ -83,10 +83,17 @@ void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool 
 		curr_dataset->set_name(filename);
 
 		QCPCurve *new_graph = new QCPCurve(_plot->xAxis, _plot->yAxis);
-		new_graph->setPen(_next_pen());
+		QPen next_pen = _next_pen();
+		new_graph->setPen(next_pen);
 		new_graph->setData(curr_dataset->x, curr_dataset->y);
 		new_graph->setName(curr_dataset->name());
 		new_graph->addToLegend();
+
+		QCPScatterStyle ss = new_graph->scatterStyle();
+		ss.setPen(next_pen);
+		new_graph->setScatterStyle(ss);
+		// TODO: this is needed because of a bug in qcustomplot (QCPCurve::QCPCurve() does not initialise the scatter skip)
+		new_graph->setScatterSkip(0);
 
 		QObject::connect(curr_dataset, &Dataset::data_changed, this, &DataManager::update_graph_data);
 		_datasets[curr_dataset] = new_graph;
@@ -122,7 +129,7 @@ int DataManager::rowCount(const QModelIndex& parent) const {
 }
 
 int DataManager::columnCount(const QModelIndex& parent) const {
-	return 5;
+	return FieldNumber;
 }
 
 Qt::ItemFlags DataManager::flags(const QModelIndex &index) const {
@@ -156,6 +163,15 @@ QVariant DataManager::data(const QModelIndex& index, int role) const {
 		case LineColour:
 			res = graph->pen().color().name();
 			break;
+		case SymbolType:
+			res = QString::number(graph->scatterStyle().shape());
+			break;
+		case SymbolSize:
+			res = graph->scatterStyle().size();
+			break;
+		case SymbolColour:
+			res = graph->scatterStyle().pen().color().name();
+			break;
 		default:
 			qCritical() << "The DataManager model has only" << columnCount() <<  "columns";
 		}
@@ -181,16 +197,28 @@ bool DataManager::setData(const QModelIndex &index, const QVariant &value, int r
 			break;
 		case LineStyle:
 			// we need to explicitly set the old appearance's pen properties because of QPen implicit sharing facilities
-			_old_appearance.pen.setStyle(graph->pen().style());
-			_new_appearance.pen.setStyle((Qt::PenStyle) value.toString().toInt());
+			_old_appearance.line_pen.setStyle(graph->pen().style());
+			_new_appearance.line_pen.setStyle((Qt::PenStyle) value.toString().toInt());
 			break;
 		case LineWidth:
-			_old_appearance.pen.setWidth(graph->pen().width());
-			_new_appearance.pen.setWidth(value.toInt());
+			_old_appearance.line_pen.setWidth(graph->pen().width());
+			_new_appearance.line_pen.setWidth(value.toInt());
 			break;
 		case LineColour:
-			_old_appearance.pen.setColor(graph->pen().color());
-			_new_appearance.pen.setColor(QColor(value.toString()));
+			_old_appearance.line_pen.setColor(graph->pen().color());
+			_new_appearance.line_pen.setColor(QColor(value.toString()));
+			break;
+		case SymbolType:
+			_old_appearance.symbol_type = graph->scatterStyle().shape();
+			_new_appearance.symbol_type = (QCPScatterStyle::ScatterShape) value.toString().toInt();
+			break;
+		case SymbolSize:
+			_old_appearance.symbol_size = graph->scatterStyle().size();
+			_new_appearance.symbol_size = value.toInt();
+			break;
+		case SymbolColour:
+			_old_appearance.symbol_pen.setColor(graph->scatterStyle().pen().color());
+			_new_appearance.symbol_pen.setColor(QColor(value.toString()));
 			break;
 		default:
 			qCritical() << "The DataManager model has only" << columnCount() <<  "columns";
@@ -224,7 +252,11 @@ SetAppearanceDetails DataManager::_current_appearance(Dataset *dataset) {
 	SetAppearanceDetails res;
 	res.dataset = dataset;
 	res.legend = graph->name();
-	res.pen = graph->pen();
+	res.line_pen = graph->pen();
+
+	res.symbol_type = graph->scatterStyle().shape();
+	res.symbol_size = graph->scatterStyle().size();
+	res.symbol_pen = graph->scatterStyle().pen();
 
 	return res;
 }

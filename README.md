@@ -17,5 +17,9 @@ For now, this document will contain the list of features that I would like to im
 * It should be possible to operate on data sets (interpolations, regressions and most of the operations available in the _data_ xmgrace menu)
 * Make it (to some degree) scriptable. This should be possibly by a judicious use of [Qt Script](http://doc.qt.io/qt-5/qtscript-index.html) 
 
-## Optional features
-* 3D surface plotting
+## Tentative roadmap
+* Add basic set appearance management
+* Add save/load facilities
+* Add basic data set manipulation facilities
+* Add the possibility of having multiple plots
+

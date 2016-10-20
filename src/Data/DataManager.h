@@ -22,11 +22,21 @@ Q_OBJECT;
 
 friend class SetAppearanceCommand;
 
-enum Fields {
-	Name, Legend, LineStyle, LineWidth, LineColour
-};
-
 public:
+	/**
+	 * Stores all the possible model fields (name, legend, line style, etc.).
+	 *
+	 * The last item of this iterator is there for convenience, since it is automatically associated to the number of fields.
+	 * This procedure is a bit hacky but it works, as long as no direct initialisation is given (such as Name = 5) and the
+	 * FieldNumber remains the last element of the enumerator.
+	 */
+	enum Fields {
+		Name, Legend,
+		LineStyle, LineWidth, LineColour,
+		SymbolType, SymbolSize, SymbolColour,
+		FieldNumber
+	};
+
 	DataManager(QCustomPlot *plot, QObject *parent = 0);
 	virtual ~DataManager();
 

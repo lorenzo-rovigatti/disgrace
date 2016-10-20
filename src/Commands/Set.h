@@ -26,6 +26,8 @@ public:
 	int id() const Q_DECL_OVERRIDE { return SET_APPEARANCE; }
 
 private:
+	void _set_graph_style(QCPCurve *graph, SetAppearanceDetails &appearance);
+
 	DataManager *_dm;
 	SetAppearanceDetails _old_appearance;
 	SetAppearanceDetails _new_appearance;

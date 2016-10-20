@@ -25,8 +25,7 @@ SetAppearanceCommand::~SetAppearanceCommand() {
 void SetAppearanceCommand::undo() {
 	Dataset *dataset = _old_appearance.dataset;
 	QCPCurve *graph = static_cast<QCPCurve *>(_dm->_datasets[dataset]);
-	graph->setName(_old_appearance.legend);
-	graph->setPen(_old_appearance.pen);
+	_set_graph_style(graph, _old_appearance);
 
 	_dm->emit_dataChanged(dataset);
 
@@ -37,13 +36,20 @@ void SetAppearanceCommand::undo() {
 void SetAppearanceCommand::redo() {
 	Dataset *dataset = _old_appearance.dataset;
 	QCPCurve *graph = static_cast<QCPCurve *>(_dm->_datasets[dataset]);
-	graph->setName(_new_appearance.legend);
-	graph->setPen(_new_appearance.pen);
+	_set_graph_style(graph, _new_appearance);
 
 	_dm->emit_dataChanged(dataset);
 
 	// TODO change so that it displays the right set index
 	setText(QObject::tr("Changing the appearance of set n. %1").arg(1));
+}
+
+void SetAppearanceCommand::_set_graph_style(QCPCurve *graph, SetAppearanceDetails &appearance) {
+	graph->setName(appearance.legend);
+	graph->setPen(appearance.line_pen);
+
+	QCPScatterStyle ss((QCPScatterStyle::ScatterShape) appearance.symbol_type, appearance.symbol_pen.color(), appearance.symbol_size);
+	graph->setScatterStyle(ss);
 }
 
 } /* namespace dg */
