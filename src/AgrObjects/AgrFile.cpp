@@ -123,9 +123,9 @@ bool AgrFile::parse(QString filename) {
 			}
 			// a proper graph line
 			else {
-				qDebug() << line_nr << "adding line to graph";
-
 				_graphs.back().parse_line(line);
+
+				qDebug() << line_nr << "adding line to graph";
 			}
 		}
 		else if(state == "in_datasets") {
@@ -144,7 +144,17 @@ bool AgrFile::parse(QString filename) {
 	}
 	qDebug() << "Parsing done";
 
-	if(state == "opened") qWarning() << "The file is missing the 'Grace project file' header.";
+	if(state == "opened") {
+		qWarning() << "The file is missing the 'Grace project file' header.";
+		return false;
+	}
+
+	// TODO: add support for multiple plots
+	if(_graphs.size() > 1) {
+		qCritical() << "disgrace does not support multiple plots yet";
+		// TODO: to be removed
+		exit(1);
+	}
 
 	_check_consistency();
 

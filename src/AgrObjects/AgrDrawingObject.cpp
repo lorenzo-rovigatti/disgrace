@@ -5,7 +5,7 @@
  *      Author: lorenzo
  */
 
-#include "AgrDrawingObject.h"
+#include "../AgrObjects/AgrDrawingObject.h"
 
 namespace dg {
 

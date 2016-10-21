@@ -32,10 +32,11 @@ set(SOURCES
 	src/Commands/Set.cpp
 	src/Dialogs/ImportDataset.cpp
 	src/Dialogs/SetAppearance.cpp
-	src/AgrParser/AgrFile.cpp
-	src/AgrParser/AgrRegion.cpp
-	src/AgrParser/AgrDrawingObject.cpp
-	src/AgrParser/AgrGraph.cpp
+	src/AgrObjects/AgrFile.cpp
+	src/AgrObjects/AgrRegion.cpp
+	src/AgrObjects/AgrDrawingObject.cpp
+	src/AgrObjects/AgrGraph.cpp
+	src/AgrObjects/AgrSet.cpp
 )
 
 set(UI_SOURCES
@@ -49,4 +50,3 @@ qt5_wrap_ui(UI_GENERATED_HEADERS ${UI_SOURCES})
 add_executable(disgrace ${SOURCES} ${UI_GENERATED_HEADERS})
 
 target_link_libraries(disgrace ${QT5_LIBRARIES})
-#qt5_use_modules(disgrace Widgets)

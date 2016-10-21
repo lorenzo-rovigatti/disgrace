@@ -48,9 +48,12 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 
 	foreach(QString filename, args) {
 		AgrFile agr_file;
-		if(!agr_file.parse(filename)) _data_manager->add_datasets_from_file(filename, true, true);
-		else _data_manager->add_datasets_from_agr(agr_file, true, true);
+		if(!agr_file.parse(filename)) _data_manager->add_datasets_from_file(filename);
+		else _data_manager->add_datasets_from_agr(agr_file);
 	}
+
+	_plot->rescaleAxes();
+	_plot->replot();
 }
 
 MainWindow::~MainWindow() {
@@ -150,7 +153,16 @@ void MainWindow::import_datasets(ImportDatasetResult &res) {
 	bool rescale_x = res.autoscale.contains('X');
 	bool rescale_y = res.autoscale.contains('Y');
 
-	_data_manager->add_datasets_from_file(res.filename, rescale_x, rescale_y);
+	_data_manager->add_datasets_from_file(res.filename);
+
+	if(rescale_x) {
+		_plot->xAxis->rescale();
+		_plot->xAxis2->rescale();
+	}
+	if(rescale_y) {
+		_plot->yAxis->rescale();
+		_plot->yAxis2->rescale();
+	}
 }
 
 void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) {

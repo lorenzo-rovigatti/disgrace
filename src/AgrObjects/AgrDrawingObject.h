@@ -5,8 +5,8 @@
  *      Author: lorenzo
  */
 
-#ifndef AGRPARSER_AGRDRAWINGOBJECT_H_
-#define AGRPARSER_AGRDRAWINGOBJECT_H_
+#ifndef AGROBJECTS_AGRDRAWINGOBJECT_H_
+#define AGROBJECTS_AGRDRAWINGOBJECT_H_
 
 #include <QVector>
 #include <QString>
@@ -26,4 +26,4 @@ protected:
 
 } /* namespace dg */
 
-#endif /* AGRPARSER_AGRDRAWINGOBJECT_H_ */
+#endif /* AGROBJECTS_AGRDRAWINGOBJECT_H_ */

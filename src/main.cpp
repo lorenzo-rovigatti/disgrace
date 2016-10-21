@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 
 	QApplication app(argc, argv);
 	QApplication::setApplicationName("disgrace");
-	QApplication::setApplicationVersion("0.1");
+	QApplication::setApplicationVersion("alpha");
 
 	QCommandLineParser parser;
 	setup_parser(parser);

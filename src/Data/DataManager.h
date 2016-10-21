@@ -11,7 +11,7 @@
 #include <QAbstractTableModel>
 #include <QMap>
 
-#include "../AgrParser/AgrFile.h"
+#include "../AgrObjects/AgrFile.h"
 #include "Dataset.h"
 #include "../Commands/Set.h"
 #include "../qcustomplot/qcustomplot.h"
@@ -35,14 +35,14 @@ public:
 		Name, Legend,
 		LineStyle, LineWidth, LineColour,
 		SymbolType, SymbolSize, SymbolColour,
-		FieldNumber
+		NumberOfFields
 	};
 
 	DataManager(QCustomPlot *plot, QObject *parent = 0);
 	virtual ~DataManager();
 
-	void add_datasets_from_agr(AgrFile &agr_file, bool rescale_x, bool rescale_y);
-	void add_datasets_from_file(QString filename, bool rescale_x, bool rescale_y);
+	void add_datasets_from_agr(AgrFile &agr_file);
+	void add_datasets_from_file(QString filename);
 	void emit_dataChanged(Dataset *dataset);
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -65,10 +65,10 @@ signals:
 
 private:
 	SetAppearanceDetails _current_appearance(Dataset *dataset);
-	Dataset *_parse_next_dataset(QFile &input);
 	QPen _next_pen();
+
 	/**
-	 * Creates a new plottable and associates it to the passed dataset.
+	 * Creates a new plottable and associates it to the dataset passed in.
 	 *
 	 * This methods also updates the relevant data structures.
 	 *

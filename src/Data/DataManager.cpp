@@ -34,59 +34,13 @@ DataManager::~DataManager() {
 	}
 }
 
-Dataset *DataManager::_parse_next_dataset(QFile &input) {
-	Dataset *new_ds = new Dataset();
-
-	int n_columns = -1;
-	int n_lines = 0;
-	while(!input.atEnd()) {
-		QString line = QString(input.readLine()).trimmed();
-		if(line[0] != '#' && line.size() > 0) {
-			// the regexp makes it possible to split the line in the presence of *any* whitespace
-			QStringList spl = line.split(QRegExp("\\s"));
-			if(n_columns == -1) n_columns = spl.size();
-
-			switch(n_columns) {
-			case 1: {
-				new_ds->x.push_back(n_lines);
-				double val = spl[0].toDouble();
-				new_ds->y.push_back(val);
-				break;
-			}
-			case 2:
-			default: {
-				double val = spl[0].toDouble();
-				new_ds->x.push_back(val);
-				val = spl[1].toDouble();
-				new_ds->y.push_back(val);
-			}
-			}
-
-			n_lines++;
-		}
-		else if(!new_ds->empty()) return new_ds;
-	}
-
-	return new_ds;
-}
-
-void DataManager::add_datasets_from_agr(AgrFile &agr_file, bool rescale_x, bool rescale_y) {
+void DataManager::add_datasets_from_agr(AgrFile &agr_file) {
 	foreach(Dataset *curr_dataset, agr_file.datasets()) {
 		_add_plottable(curr_dataset);
 	}
-
-	if(rescale_x) {
-		_plot->xAxis->rescale();
-		_plot->xAxis2->rescale();
-	}
-	if(rescale_y) {
-		_plot->yAxis->rescale();
-		_plot->yAxis2->rescale();
-	}
-	_plot->replot();
 }
 
-void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool rescale_y) {
+void DataManager::add_datasets_from_file(QString filename) {
 	QFile input(filename);
 	if(!input.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		qCritical() << "File" << filename << "is not readable";
@@ -94,20 +48,10 @@ void DataManager::add_datasets_from_file(QString filename, bool rescale_x, bool 
 	}
 
 	while(!input.atEnd()) {
-		Dataset *curr_dataset = _parse_next_dataset(input);
-		curr_dataset->set_name(filename);
+		Dataset *curr_dataset = new Dataset();
+		curr_dataset->init_from_file(input, "xy");
 		_add_plottable(curr_dataset);
 	}
-
-	if(rescale_x) {
-		_plot->xAxis->rescale();
-		_plot->xAxis2->rescale();
-	}
-	if(rescale_y) {
-		_plot->yAxis->rescale();
-		_plot->yAxis2->rescale();
-	}
-	_plot->replot();
 }
 
 void DataManager::update_graph_data(Dataset *ds) {
@@ -128,7 +72,7 @@ int DataManager::rowCount(const QModelIndex& parent) const {
 }
 
 int DataManager::columnCount(const QModelIndex& parent) const {
-	return FieldNumber;
+	return NumberOfFields;
 }
 
 Qt::ItemFlags DataManager::flags(const QModelIndex &index) const {

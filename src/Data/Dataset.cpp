@@ -12,7 +12,7 @@
 
 namespace dg {
 
-Dataset::Dataset(): _name("") {
+Dataset::Dataset(): _name(""), _type("") {
 	_type_to_n_column["xy"] = 2; // An X-Y scatter and/or line plot, plus (optionally) an annotated value
 	_type_to_n_column["xydx"] = 3; // Same as XY, but with error bars (either one- or two-sided) along X axis
 	_type_to_n_column["xydy"] = 3; // Same as XYDX, but error bars are along Y axis
@@ -39,31 +39,27 @@ Dataset::~Dataset() {
 
 }
 
-void Dataset::append_agr_line(QString &line) {
+void Dataset::append_agr_line(QString line) {
 	QRegularExpression re_graph_set_number("@target G(\\d+).S(\\d+)");
 	QRegularExpression re_type("@type (\\w+)");
 
 	QRegularExpressionMatch number_match = re_graph_set_number.match(line);
 	QRegularExpressionMatch type_match = re_type.match(line);
 	if(number_match.hasMatch()) {
-		set_name(number_match.captured(0));
+		_g_s.first = number_match.captured(1).toInt();
+		_g_s.second = number_match.captured(2).toInt();
+
+		QString name = QString("G%1.S%2").arg(_g_s.first).arg(_g_s.second);
+		set_name(name);
 	}
-	else if(type_match.hasMatch()) {
-		_type = type_match.captured(1);
-		if(_type_to_n_column.contains(_type)) {
-			if(!_implemented_types.contains(_type)) {
-				qCritical() << "Type" << _type << "is not supported yet";
-				// TODO: to be removed
-				exit(1);
-			}
-		}
-		else {
-			qCritical() << "Unknown type" << _type;
+	else if(type_match.hasMatch()) set_type(type_match.captured(1));
+	else {
+		if(_type == "") {
+			qCritical() << "Trying to write to an uninitialised dataset";
 			// TODO: to be removed
 			exit(1);
 		}
-	}
-	else {
+
 		int n_columns = _type_to_n_column[_type];
 		QStringList spl = line.split(QRegExp("\\s"));
 		if(spl.size() == n_columns) {
@@ -75,12 +71,68 @@ void Dataset::append_agr_line(QString &line) {
 	}
 }
 
+void Dataset::init_from_file(QFile &input, QString type) {
+	set_type(type);
+
+	int n_columns = -1;
+	int n_lines = 0;
+	while(!input.atEnd()) {
+		QString line = QString(input.readLine()).trimmed();
+		if(line[0] != '#' && line.size() > 0) {
+			// the regexp makes it possible to split the line in the presence of *any* whitespace
+			QStringList spl = line.split(QRegExp("\\s"));
+			if(n_columns == -1) n_columns = spl.size();
+
+			switch(n_columns) {
+			case 1: {
+				x.push_back(n_lines);
+				double val = spl[0].toDouble();
+				y.push_back(val);
+				break;
+			}
+			case 2:
+			default: {
+				double val = spl[0].toDouble();
+				x.push_back(val);
+				val = spl[1].toDouble();
+				y.push_back(val);
+			}
+			}
+
+			n_lines++;
+		}
+		else if(!empty()) return;
+	}
+
+	set_name(input.fileName());
+}
+
 void Dataset::commit_data_changes() {
 	emit data_changed(this);
 }
 
+void Dataset::set_type(QString type) {
+	if(_type_to_n_column.contains(type)) {
+		if(!_implemented_types.contains(type)) {
+			qCritical() << "Type" << type << "is not supported yet";
+			// TODO: to be removed
+			exit(1);
+		}
+	}
+	else {
+		qCritical() << "Unknown type" << type;
+		// TODO: to be removed
+		exit(1);
+	}
+	_type = type;
+}
+
 void Dataset::set_name(QString name) {
 	_name = name;
+}
+
+void Dataset::set_g_s(int g, int s) {
+	_g_s = QPair<int, int>(g, s);
 }
 
 } /* namespace dg */
