@@ -18,14 +18,27 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	_ui->setupUi(this);
 
 	_plot = _ui->custom_plot;
-	_data_manager = new DataManager(_plot);
-	_import_dataset_dialog = new ImportDataset(this);
-	_set_appearance_dialog = new SetAppearance(_data_manager, this);
+	_agr_file = new AgrFile(_plot);
 
 	_initialise_undo_stack();
-	_initialise_custom_plot();
 
 	_plot->setFocus();
+
+	const QStringList args = parser->positionalArguments();
+	qDebug() << "Passed in" << args.size() << "file(s)";
+
+	foreach(QString filename, args) {
+		if(!_agr_file->parse_agr(filename)) _agr_file->parse_text(filename);
+	}
+	_agr_file->plot();
+
+	_import_dataset_dialog = new ImportDataset(this);
+	_set_appearance_dialog = new SetAppearance(_agr_file, this);
+
+	foreach(AgrGraph *graph, _agr_file->graphs()) {
+		// TODO: encapsulate this in a method that can be called when new graphs are added
+		QObject::connect(graph, &AgrGraph::new_command, this, &MainWindow::push_command);
+	}
 
 	QObject::connect(_ui->action_toggle_axis_dragging, &QAction::toggled, this, &MainWindow::toggle_axis_dragging);
 	QObject::connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
@@ -34,31 +47,17 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	QObject::connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
 	QObject::connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
 	QObject::connect(_ui->action_set_appearance, &QAction::triggered, _set_appearance_dialog, &SetAppearance::show);
-	QObject::connect(_data_manager, &DataManager::dataChanged, this, &MainWindow::replot);
-	QObject::connect(_data_manager, &DataManager::new_command, this, &MainWindow::push_command);
 
 	QObject::connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::mouse_move);
 	QObject::connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::mouse_press);
 	QObject::connect(_plot, &QCustomPlot::mouseRelease, this, &MainWindow::mouse_release);
 	QObject::connect(_plot, &QCustomPlot::beforeReplot, this, &MainWindow::before_replot);
 	QObject::connect(_plot, &QCustomPlot::axisDoubleClick, this, &MainWindow::axis_double_click);
-
-	const QStringList args = parser->positionalArguments();
-	qDebug() << "Passed in" << args.size() << "file(s)";
-
-	foreach(QString filename, args) {
-		AgrFile agr_file;
-		if(!agr_file.parse(filename)) _data_manager->add_datasets_from_file(filename);
-		else _data_manager->add_datasets_from_agr(agr_file);
-	}
-
-	_plot->rescaleAxes();
-	_plot->replot();
 }
 
 MainWindow::~MainWindow() {
 	delete _ui;
-	delete _data_manager;
+	delete _agr_file;
 	delete _undo_view;
 	delete _undo_stack;
 	delete _import_dataset_dialog;
@@ -153,7 +152,7 @@ void MainWindow::import_datasets(ImportDatasetResult &res) {
 	bool rescale_x = res.autoscale.contains('X');
 	bool rescale_y = res.autoscale.contains('Y');
 
-	_data_manager->add_datasets_from_file(res.filename);
+//	_data_manager->add_datasets_from_file(res.filename);
 
 	if(rescale_x) {
 		_plot->xAxis->rescale();
@@ -175,24 +174,6 @@ void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) 
 	}
 }
 
-void MainWindow::_initialise_axis(QCPAxis *axis) {
-	axis->grid()->setPen(Qt::NoPen);
-	axis->grid()->setZeroLinePen(Qt::NoPen);
-
-	QFont font("Times New Roman", 18);
-
-	axis->setBasePen(QPen(Qt::black, 2));
-	axis->setLabelFont(font);
-	axis->setTickLabelFont(font);
-
-	// ticks
-	axis->setTickLengthIn(14);
-	axis->setTickPen(QPen(Qt::black, 2));
-
-	// subticks
-	axis->setSubTickLengthIn(7);
-}
-
 void MainWindow::_initialise_undo_stack() {
 	_undo_stack = new QUndoStack();
 
@@ -208,23 +189,6 @@ void MainWindow::_initialise_undo_stack() {
 
 	_ui->action_redo->setShortcuts(QKeySequence::Redo);
 	QObject::connect(_ui->action_redo, &QAction::triggered, _undo_stack, &QUndoStack::redo);
-}
-
-void MainWindow::_initialise_custom_plot() {
-	_plot->setAutoAddPlottableToLegend(true);
-	// create a top and a right axes, set their visibility to true and then connects their ranges to the bottom and left axes, respectively
-	_plot->axisRect()->setupFullAxesBox(true);
-	foreach(QCPAxis *axis, _plot->axisRect()->axes()) {
-		_initialise_axis(axis);
-	}
-
-	QFont legend_font("Timer New Roman", 14);
-	QCPLegend *legend = _plot->legend;
-	legend->setFont(legend_font);
-	legend->setVisible(true);
-
-	// set the placement of the legend (index 0 in the axis rect's inset layout) to not be border-aligned (default), but freely, so we can reposition it anywhere:
-	_plot->axisRect()->insetLayout()->setInsetPlacement(0, QCPLayoutInset::ipFree);
 }
 
 } /* namespace dg */

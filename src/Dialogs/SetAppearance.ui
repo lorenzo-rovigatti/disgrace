@@ -7,13 +7,16 @@
     <x>0</x>
     <y>0</y>
     <width>356</width>
-    <height>477</height>
+    <height>518</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Set Appearance</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QComboBox" name="cb_plots"/>
+   </item>
    <item>
     <widget class="QListView" name="list_curves">
      <property name="sizePolicy">

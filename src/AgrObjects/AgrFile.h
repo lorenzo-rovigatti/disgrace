@@ -22,21 +22,22 @@ namespace dg {
 
 class AgrFile {
 public:
-	AgrFile();
+	AgrFile(QCustomPlot *plot);
 	virtual ~AgrFile();
 
-	bool parse(QString filename);
-	QVector<Dataset *> &datasets() {
-		return _datasets;
-	}
+	bool parse_agr(QString filename);
+	void parse_text(QString filename, int graph_id = 0);
+	QList<AgrGraph *> graphs() { return _graphs.values(); }
+	QList<Dataset *> datasets(int graph_id = 0);
+	void plot();
 
 private:
 	QVector<QString> _header_lines;
-	QVector<Dataset *> _datasets;
 	QMap<int, AgrGraph *> _graphs;
 	QVector<AgrRegion> _regions;
 	QVector<AgrDrawingObject> _drawing_objects;
 	QString _filename;
+	QCustomPlot *_plot;
 
 	// needed in the parsing stage
 	QRegularExpressionMatch _last_match;

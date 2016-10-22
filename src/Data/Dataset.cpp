@@ -9,10 +9,11 @@
 
 #include <QRegularExpression>
 #include <QDebug>
+#include "../Commands/defs.h"
 
 namespace dg {
 
-Dataset::Dataset(): _name(""), _type(""), _id_dataset(-1), _id_header(-1) {
+Dataset::Dataset(): _name(""), _type(""), _id_dataset(-1), _id_header(-1), _plottable(NULL) {
 	_type_to_n_column["xy"] = 2; // An X-Y scatter and/or line plot, plus (optionally) an annotated value
 	_type_to_n_column["xydx"] = 3; // Same as XY, but with error bars (either one- or two-sided) along X axis
 	_type_to_n_column["xydy"] = 3; // Same as XYDX, but error bars are along Y axis
@@ -33,10 +34,54 @@ Dataset::Dataset(): _name(""), _type(""), _id_dataset(-1), _id_header(-1) {
 	_type_to_n_column["xyboxplot"] = 6; // Box plot (X, median, upper/lower limit, upper/lower whisker)
 
 	_implemented_types << "xy";
+	_default_pen.setWidth(2);
 }
 
 Dataset::~Dataset() {
+	if(_plottable != NULL) delete _plottable;
+}
 
+void Dataset::set_appearance(SetAppearanceDetails &new_appearance) {
+	if(_type == "xy") {
+		QCPCurve *graph = static_cast<QCPCurve *>(_plottable);
+
+		graph->setName(new_appearance.legend);
+		graph->setPen(new_appearance.line_pen);
+
+		QCPScatterStyle ss((QCPScatterStyle::ScatterShape) new_appearance.symbol_type,
+				new_appearance.symbol_pen.color(),
+				new_appearance.symbol_size);
+		graph->setScatterStyle(ss);
+	}
+
+	emit changed(this);
+}
+
+SetAppearanceDetails Dataset::appearance() {
+	SetAppearanceDetails res;
+
+	if(_type == "xy") {
+		QCPCurve *graph = static_cast<QCPCurve *>(_plottable);
+
+		res.dataset = this;
+		res.legend = graph->name();
+		res.line_pen = graph->pen();
+
+		res.symbol_type = graph->scatterStyle().shape();
+		res.symbol_size = graph->scatterStyle().size();
+		res.symbol_pen = graph->scatterStyle().pen();
+	}
+
+	return res;
+}
+
+void Dataset::create_plottable(QCPAxisRect *axis_rect) {
+	if(_type == "xy") {
+		_plottable = new QCPCurve(axis_rect->axis(QCPAxis::atBottom), axis_rect->axis(QCPAxis::atLeft));
+		_plottable->setName(name());
+		_plottable->setPen(_default_pen);
+		_set_plottable_data();
+	}
 }
 
 void Dataset::append_header_line(QString line) {
@@ -79,7 +124,6 @@ void Dataset::append_agr_line(QString line) {
 			// TODO: this works only for xy sets
 			x.push_back(spl[0].toDouble());
 			y.push_back(spl[1].toDouble());
-			commit_data_changes();
 		}
 	}
 }
@@ -120,11 +164,14 @@ void Dataset::init_from_file(QFile &input, QString type) {
 	set_name(input.fileName());
 }
 
-void Dataset::commit_data_changes() {
-	emit data_changed(this);
+void Dataset::_set_plottable_data() {
+	if(_type == "xy") {
+		QCPCurve *curve = static_cast<QCPCurve *>(_plottable);
+		curve->setData(x, y);
+	}
 }
 
-void Dataset::set_type(QString type) {
+void Dataset::_check_type(QString type) {
 	if(_type_to_n_column.contains(type)) {
 		if(!_implemented_types.contains(type)) {
 			qCritical() << "Type" << type << "is not supported yet";
@@ -137,6 +184,10 @@ void Dataset::set_type(QString type) {
 		// TODO: to be removed
 		exit(1);
 	}
+}
+
+void Dataset::set_type(QString type) {
+	_check_type(type);
 	_type = type;
 }
 

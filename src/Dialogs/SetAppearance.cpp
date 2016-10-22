@@ -3,33 +3,33 @@
 #include <QMessageBox>
 #include <QPushButton>
 
-#include "../Data/DataManager.h"
+#include "../AgrObjects/AgrFile.h"
 #include "ui_SetAppearance.h"
 
 namespace dg {
 
-SetAppearance::SetAppearance(DataManager *dm, QWidget *parent) :
-		QDialog(parent), _ui(new Ui::SetAppearance), _dm(dm) {
+SetAppearance::SetAppearance(AgrFile *agr_file, QWidget *parent) :
+		QDialog(parent), _ui(new Ui::SetAppearance), _agr_file(agr_file) {
 	_ui->setupUi(this);
-	_ui->list_curves->setModel(dm);
+	_ui->list_curves->setModel(agr_file->graphs()[0]);
 
 	_setup_widgets();
 
 	_mapper = new QDataWidgetMapper(this);
-	_mapper->setModel(dm);
+	_mapper->setModel(agr_file->graphs()[0]);
 	_mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
-	_mapper->addMapping(_ui->line_legend, DataManager::Legend);
+	_mapper->addMapping(_ui->line_legend, AgrGraph::Legend);
 	// TODO: we should set up a model for the combobox to make it possible to use currentData rather than currentText
-	_mapper->addMapping(_ui->cb_line_style, DataManager::LineStyle, "currentText");
-	_mapper->addMapping(_ui->sb_line_width, DataManager::LineWidth);
-	_mapper->addMapping(_ui->line_colour, DataManager::LineColour);
-	_mapper->addMapping(_ui->cb_symbol_type, DataManager::SymbolType);
-	_mapper->addMapping(_ui->sb_symbol_size, DataManager::SymbolSize);
-	_mapper->addMapping(_ui->symbol_colour, DataManager::SymbolColour);
+	_mapper->addMapping(_ui->cb_line_style, AgrGraph::LineStyle, "currentText");
+	_mapper->addMapping(_ui->sb_line_width, AgrGraph::LineWidth);
+	_mapper->addMapping(_ui->line_colour, AgrGraph::LineColour);
+	_mapper->addMapping(_ui->cb_symbol_type, AgrGraph::SymbolType);
+	_mapper->addMapping(_ui->sb_symbol_size, AgrGraph::SymbolSize);
+	_mapper->addMapping(_ui->symbol_colour, AgrGraph::SymbolColour);
 
-	// connects the list widget to the mapper, so that the letter is notified when the user changes the selected set
+	// connects the list widget to the mapper, so that the latter is notified when the user changes the selected set
 	QObject::connect(_ui->list_curves->selectionModel(), &QItemSelectionModel::currentRowChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
-	QObject::connect(dm, &DataManager::dataChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
+	QObject::connect(agr_file->graphs()[0], &AgrGraph::dataChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
 
 	// set up the colour pickers
 	QAction *line_colour_action = _ui->line_colour->addAction(QIcon(), QLineEdit::TrailingPosition);
@@ -54,7 +54,7 @@ void SetAppearance::show() {
 	QWidget::show();
 	QModelIndex idx = _ui->list_curves->currentIndex();
 	if(idx.row() == -1) {
-		QModelIndex first_idx = _dm->index(0, 0);
+		QModelIndex first_idx = _agr_file->graphs()[0]->index(0, 0);
 		_ui->list_curves->setCurrentIndex(first_idx);
 	}
 }
@@ -92,7 +92,11 @@ void SetAppearance::change_btn_colour_background(const QString &colour_name) {
 }
 
 void SetAppearance::_setup_widgets() {
-	// Line style
+	// graph combo box
+	// TODO: we want to use a model for this
+
+
+	// line style
 	_ui->cb_line_style->setIconSize(QSize(80, 14));
 	for(int pen_style = Qt::NoPen; pen_style < Qt::CustomDashLine; pen_style++) {
 		QPixmap pix(80, 14);

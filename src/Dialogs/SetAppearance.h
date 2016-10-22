@@ -10,13 +10,13 @@ class SetAppearance;
 
 namespace dg {
 
-class DataManager;
+class AgrFile;
 
 class SetAppearance: public QDialog {
 Q_OBJECT
 
 public:
-	explicit SetAppearance(DataManager *dm, QWidget *parent = 0);
+	explicit SetAppearance(AgrFile *agr_file, QWidget *parent = 0);
 	~SetAppearance();
 
 public slots:
@@ -30,7 +30,7 @@ private:
 	void _setup_widgets();
 
 	Ui::SetAppearance *_ui;
-	DataManager *_dm;
+	AgrFile *_agr_file;
 	QDataWidgetMapper *_mapper;
 };
 

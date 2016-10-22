@@ -12,22 +12,36 @@
 
 namespace dg {
 
-AgrFile::AgrFile(): _curr_graph(NULL) {
-
+AgrFile::AgrFile(QCustomPlot *plot): _plot(plot), _curr_graph(NULL), _curr_dataset(NULL) {
+	// initialise the QCustomPlot instance
+	_plot->plotLayout()->clear();
 }
 
 AgrFile::~AgrFile() {
 
 }
 
-bool AgrFile::parse(QString filename) {
-	_filename = filename;
+QList<Dataset *> AgrFile::datasets(int graph_id) {
+	if(!_graphs.contains(graph_id)) {
+		qCritical() << "Graph" << graph_id << "does not exist";
+		// TODO: to be removed
+		exit(1);
+	}
 
-	_header_lines.clear();
-	_datasets.clear();
-	_graphs.clear();
-	_regions.clear();
-	_drawing_objects.clear();
+	return _graphs[graph_id]->datasets();
+}
+
+void AgrFile::plot() {
+	foreach(AgrGraph *graph, _graphs.values()) {
+		graph->plot();
+	}
+
+	_plot->rescaleAxes();
+	_plot->replot();
+}
+
+bool AgrFile::parse_agr(QString filename) {
+	_filename = filename;
 
 	QRegularExpression re_header_start("# Grace project file");
 	QRegularExpression re_header_stop("@timestamp def");
@@ -79,7 +93,7 @@ bool AgrFile::parse(QString filename) {
 			else if(_has_match(re_graph_start, line)) {
 				state = "in_graphs";
 				int graph_id = _last_match.captured(1).toInt();
-				_curr_graph = new AgrGraph(line);
+				_curr_graph = new AgrGraph(_plot, line);
 				_graphs[graph_id] = _curr_graph;
 
 				qDebug() << line_nr << "parsing graph n." << _graphs.size() - 1;
@@ -97,7 +111,7 @@ bool AgrFile::parse(QString filename) {
 			if(_has_match(re_graph_start, line)) {
 				state = "in_graphs";
 				int graph_id = _last_match.captured(1).toInt();
-				_curr_graph = new AgrGraph(line);
+				_curr_graph = new AgrGraph(_plot, line);
 				_graphs[graph_id] = _curr_graph;
 
 				qDebug() << line_nr << "parsing graph n." << _graphs.size();
@@ -125,14 +139,13 @@ bool AgrFile::parse(QString filename) {
 
 				_curr_dataset = _graphs[graph_id]->dataset(set_id);
 				_curr_dataset->append_agr_line(line);
-				_datasets.push_back(_curr_dataset);
 
-				qDebug() << line_nr << "parsing dataset n." << _datasets.size() - 1;
+				qDebug() << line_nr << "parsing dataset n." << set_id;
 			}
 			// a new graph
 			else if(_has_match(re_graph_start, line)) {
 				int graph_id = _last_match.captured(1).toInt();
-				_curr_graph = new AgrGraph(line);
+				_curr_graph = new AgrGraph(_plot, line);
 				_graphs[graph_id] = _curr_graph;
 
 				qDebug() << line_nr << "parsing graph n." << _graphs.size() - 1;
@@ -156,8 +169,7 @@ bool AgrFile::parse(QString filename) {
 				}
 
 				_curr_dataset = _graphs[graph_id]->dataset(set_id);
-				_datasets.push_back(_curr_dataset);
-				qDebug() << line_nr << "parsing dataset n." << _datasets.size() - 1;
+				qDebug() << line_nr << "parsing dataset n." << set_id;
 			}
 			_curr_dataset->append_agr_line(line);
 
@@ -185,6 +197,19 @@ bool AgrFile::parse(QString filename) {
 	_check_consistency();
 
 	return true;
+}
+
+void AgrFile::parse_text(QString filename, int graph_id) {
+	qDebug() << _graphs.empty();
+	AgrGraph *graph;
+	if(_graphs.empty()) {
+		graph = new AgrGraph(_plot);
+		graph->set_id(0);
+		_graphs[0] = graph;
+	}
+	else graph = _graphs[0];
+
+	graph->add_datasets_from_file(filename);
 }
 
 bool AgrFile::_has_match(QRegularExpression &re, QString &str) {

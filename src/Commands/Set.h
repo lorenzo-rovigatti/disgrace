@@ -18,7 +18,7 @@ class DataManager;
 
 class SetAppearanceCommand: public QUndoCommand {
 public:
-	SetAppearanceCommand(DataManager *dm, SetAppearanceDetails &old_appearance, SetAppearanceDetails &new_appearance, QUndoCommand *parent = 0);
+	SetAppearanceCommand(SetAppearanceDetails &old_appearance, SetAppearanceDetails &new_appearance, QUndoCommand *parent = 0);
 	virtual ~SetAppearanceCommand();
 
 	void undo() Q_DECL_OVERRIDE;
@@ -26,9 +26,6 @@ public:
 	int id() const Q_DECL_OVERRIDE { return SET_APPEARANCE; }
 
 private:
-	void _set_graph_style(QCPCurve *graph, SetAppearanceDetails &appearance);
-
-	DataManager *_dm;
 	SetAppearanceDetails _old_appearance;
 	SetAppearanceDetails _new_appearance;
 };

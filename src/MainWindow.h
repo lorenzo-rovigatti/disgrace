@@ -13,7 +13,7 @@
 
 #include "qcustomplot/qcustomplot.h"
 
-#include "Data/DataManager.h"
+#include "AgrObjects/AgrFile.h"
 #include "Dialogs/ImportDataset.h"
 #include "Dialogs/SetAppearance.h"
 
@@ -59,8 +59,6 @@ public slots:
 	void push_command(QUndoCommand *nc);
 
 private:
-	void _initialise_axis(QCPAxis *);
-	void _initialise_custom_plot();
 	void _initialise_undo_stack();
 	Ui::MainWindow *_ui;
 
@@ -71,7 +69,7 @@ private:
 	bool _toggle_drag_legend, _dragging_legend;
 	QPointF _drag_legend_origin, _old_legend_pos;
 
-	DataManager *_data_manager;
+	AgrFile *_agr_file;
 	ImportDataset *_import_dataset_dialog;
 	SetAppearance *_set_appearance_dialog;
 	AxisRanges _old_ranges;

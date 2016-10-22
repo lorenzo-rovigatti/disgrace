@@ -11,35 +11,86 @@
 #include <QString>
 #include <QVector>
 #include <QMap>
+#include "../qcustomplot/qcustomplot.h"
 #include "../Data/Dataset.h"
+#include "../Commands/defs.h"
 
 namespace dg {
 
 /**
  * Represents a plot in the xmgrace language.
  */
-class AgrGraph {
+class AgrGraph: public QAbstractTableModel {
+Q_OBJECT
+
 public:
-	AgrGraph();
-	AgrGraph(QString &line);
+	/**
+	 * Stores all the possible model fields (name, legend, line style, etc.).
+	 *
+	 * The last item of this iterator is there for convenience, since it is automatically associated to the number of fields.
+	 * This procedure is a bit hacky but it works, as long as no direct initialisation is given (such as Name = 5) and the
+	 * FieldNumber remains the last element of the enumerator.
+	 */
+	enum Fields {
+		Name, Legend,
+		LineStyle, LineWidth, LineColour,
+		SymbolType, SymbolSize, SymbolColour,
+		NumberOfFields
+	};
+
+	AgrGraph(QCustomPlot *plot);
+	AgrGraph(QCustomPlot *plot, QString &line);
 	virtual ~AgrGraph();
+
+	void add_datasets_from_file(QString filename);
 
 	void parse_line(QString &line);
 	QList<Dataset *> datasets() {
 		return _datasets.values();
 	}
 
+	void set_id(int n_id) { _id_graph = n_id; }
+
+	int id() { return _id_graph; }
 	Dataset *dataset(int d_id);
+	void plot();
+
+	int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+	Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+
+	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
+
+public slots:
+	bool submit() Q_DECL_OVERRIDE;
+	void replot();
+
+signals:
+	/** Signals that some data modification, encapsulated in a QUndoCommand, has been performed.
+	 *
+	 * @param nc the command that should be added to the undo stack
+	 */
+	void new_command(QUndoCommand *nc);
 
 protected:
+	QCPAxisRect *_axis_rect;
+	QCustomPlot *_plot;
+	QCPLegend *_legend;
 	Dataset *_curr_dataset;
 
 	QVector<QString> _lines;
 	QMap<int, Dataset *> _datasets;
+	QVector<int> _sorted_datasets;
 	QString _state;
-	int _id;
+	int _id_graph;
 
-	void _initialise();
+	SetAppearanceDetails _old_appearance;
+	SetAppearanceDetails _new_appearance;
+
+	void _new_dataset(int id);
+	void _initialise_axis(QCPAxis *axis);
+	void _initialise(QCustomPlot *plot);
 };
 
 } /* namespace dg */

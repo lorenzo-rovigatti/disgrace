@@ -34,7 +34,6 @@ set(SOURCES
 	src/main.cpp
 	src/MainWindow.cpp
 	src/Data/Dataset.cpp
-	src/Data/DataManager.cpp
 	src/Commands/Legend.cpp
 	src/Commands/Axis.cpp
 	src/Commands/Set.cpp
@@ -44,7 +43,6 @@ set(SOURCES
 	src/AgrObjects/AgrRegion.cpp
 	src/AgrObjects/AgrDrawingObject.cpp
 	src/AgrObjects/AgrGraph.cpp
-	src/AgrObjects/AgrSet.cpp
 )
 
 set(UI_SOURCES
