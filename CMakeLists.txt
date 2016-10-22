@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 project(disgrace)
 
+OPTION(G "Set to ON to compile with optimisations and debug symbols" OFF)
+
+IF(G)
+	SET(CMAKE_BUILD_TYPE RelWithDebInfo)
+	MESSAGE(STATUS "Compiling in Release+Debug symbols mode")
+ENDIF(G)
+
 # Tell CMake to run moc when necessary:
 set(CMAKE_AUTOMOC ON)
 # As moc files are generated in the binary dir, tell CMake to always look for includes there:
@@ -13,6 +20,7 @@ include_directories(${Qt5Widgets_INCLUDES})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/qcustomplot)
 
 add_definitions(-DQT_MESSAGELOGCONTEXT) 
+add_definitions(-Wall -Wshadow)
 
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)

@@ -10,7 +10,8 @@
 
 #include <QString>
 #include <QVector>
-#include "AgrSet.h"
+#include <QMap>
+#include "../Data/Dataset.h"
 
 namespace dg {
 
@@ -24,14 +25,21 @@ public:
 	virtual ~AgrGraph();
 
 	void parse_line(QString &line);
-	QVector<AgrSet> &sets() {
-		return _sets;
+	QList<Dataset *> datasets() {
+		return _datasets.values();
 	}
 
+	Dataset *dataset(int d_id);
+
 protected:
+	Dataset *_curr_dataset;
+
 	QVector<QString> _lines;
-	QVector<AgrSet> _sets;
+	QMap<int, Dataset *> _datasets;
 	QString _state;
+	int _id;
+
+	void _initialise();
 };
 
 } /* namespace dg */

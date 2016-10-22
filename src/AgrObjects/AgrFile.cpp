@@ -12,7 +12,7 @@
 
 namespace dg {
 
-AgrFile::AgrFile() {
+AgrFile::AgrFile(): _curr_graph(NULL) {
 
 }
 
@@ -78,7 +78,9 @@ bool AgrFile::parse(QString filename) {
 			// ... or by the start of a graph
 			else if(_has_match(re_graph_start, line)) {
 				state = "in_graphs";
-				_graphs.push_back(AgrGraph(line));
+				int graph_id = _last_match.captured(1).toInt();
+				_curr_graph = new AgrGraph(line);
+				_graphs[graph_id] = _curr_graph;
 
 				qDebug() << line_nr << "parsing graph n." << _graphs.size() - 1;
 			}
@@ -94,7 +96,9 @@ bool AgrFile::parse(QString filename) {
 			// the regions may be ended by the start of a graph
 			if(_has_match(re_graph_start, line)) {
 				state = "in_graphs";
-				_graphs.push_back(AgrGraph(line));
+				int graph_id = _last_match.captured(1).toInt();
+				_curr_graph = new AgrGraph(line);
+				_graphs[graph_id] = _curr_graph;
 
 				qDebug() << line_nr << "parsing graph n." << _graphs.size();
 			}
@@ -110,30 +114,52 @@ bool AgrFile::parse(QString filename) {
 			// the graphs may be ended by the start of a dataset
 			if(_has_match(re_dataset_start, line)) {
 				state = "in_datasets";
-				_datasets.push_back(new Dataset());
-				_datasets.back()->append_agr_line(line);
+				int graph_id = _last_match.captured(1).toInt();
+				int set_id = _last_match.captured(2).toInt();
+
+				if(!_graphs.contains(graph_id)) {
+					qCritical() << "The agr file contains a dataset associated to a non-existent graph" << graph_id;
+					// TODO: to be removed
+					exit(1);
+				}
+
+				_curr_dataset = _graphs[graph_id]->dataset(set_id);
+				_curr_dataset->append_agr_line(line);
+				_datasets.push_back(_curr_dataset);
 
 				qDebug() << line_nr << "parsing dataset n." << _datasets.size() - 1;
 			}
 			// a new graph
 			else if(_has_match(re_graph_start, line)) {
-				_graphs.push_back(AgrGraph(line));
+				int graph_id = _last_match.captured(1).toInt();
+				_curr_graph = new AgrGraph(line);
+				_graphs[graph_id] = _curr_graph;
 
 				qDebug() << line_nr << "parsing graph n." << _graphs.size() - 1;
 			}
 			// a proper graph line
 			else {
-				_graphs.back().parse_line(line);
+				_curr_graph->parse_line(line);
 
 				qDebug() << line_nr << "adding line to graph";
 			}
 		}
 		else if(state == "in_datasets") {
 			if(_has_match(re_dataset_start, line)) {
-				_datasets.push_back(new Dataset());
+				int graph_id = _last_match.captured(1).toInt();
+				int set_id = _last_match.captured(2).toInt();
+
+				if(!_graphs.contains(graph_id)) {
+					qCritical() << "The agr file contains a dataset associated to a non-existent graph" << graph_id;
+					// TODO: to be removed
+					exit(1);
+				}
+
+				_curr_dataset = _graphs[graph_id]->dataset(set_id);
+				_datasets.push_back(_curr_dataset);
 				qDebug() << line_nr << "parsing dataset n." << _datasets.size() - 1;
 			}
-			_datasets.back()->append_agr_line(line);
+			_curr_dataset->append_agr_line(line);
 
 			qDebug() << line_nr << "adding line to dataset";
 		}
@@ -162,8 +188,8 @@ bool AgrFile::parse(QString filename) {
 }
 
 bool AgrFile::_has_match(QRegularExpression &re, QString &str) {
-	QRegularExpressionMatch match = re.match(str);
-	return match.hasMatch();
+	_last_match = re.match(str);
+	return _last_match.hasMatch();
 }
 
 void AgrFile::_check_consistency() {

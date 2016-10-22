@@ -23,7 +23,11 @@ Q_OBJECT
 private:
 	QString _name;
 	QString _type;
-	QPair<int, int> _g_s;
+	/// id of the dataset. It is unique on a per-graph basis.
+	int _id_dataset;
+	/// id of the dataset, as found in the header lines of the agr file. If the dataset was not created from an agr then its value is -1.
+	int _id_header;
+	QVector<QString> _header_lines;
 	// TODO: we should not keep a copy of these in each instance...
 	QMap<QString, int> _type_to_n_column;
 	QVector<QString> _implemented_types;
@@ -36,15 +40,16 @@ public:
 
 	void set_type(QString type);
 	void set_name(QString name);
-	void set_g_s(int g, int s);
+	void set_id(int n_id);
 	void commit_data_changes();
 
+	void append_header_line(QString line);
 	void append_agr_line(QString line);
 	void init_from_file(QFile &input, QString type);
 
 	QString name() { return _name; }
-	bool empty() { return x.size() == 0; }
-	QPair<int, int> g_s() { return _g_s; }
+	bool empty() { return x.empty(); }
+	int id() { return _id_dataset; }
 
 signals:
 	void data_changed(Dataset *);

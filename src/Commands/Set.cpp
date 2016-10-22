@@ -11,7 +11,7 @@
 namespace dg {
 
 SetAppearanceCommand::SetAppearanceCommand(DataManager *dm, SetAppearanceDetails &old_appearance, SetAppearanceDetails &new_appearance, QUndoCommand *parent) :
-		_dm(dm), _old_appearance(old_appearance), _new_appearance(new_appearance), QUndoCommand(parent) {
+		QUndoCommand(parent), _dm(dm), _old_appearance(old_appearance), _new_appearance(new_appearance) {
 	if(old_appearance.dataset != new_appearance.dataset) {
 		qCritical() << "The objects storing the old and new appearances point to different datasets";
 		exit(1);

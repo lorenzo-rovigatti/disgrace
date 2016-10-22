@@ -12,7 +12,7 @@
 
 namespace dg {
 
-Dataset::Dataset(): _name(""), _type("") {
+Dataset::Dataset(): _name(""), _type(""), _id_dataset(-1), _id_header(-1) {
 	_type_to_n_column["xy"] = 2; // An X-Y scatter and/or line plot, plus (optionally) an annotated value
 	_type_to_n_column["xydx"] = 3; // Same as XY, but with error bars (either one- or two-sided) along X axis
 	_type_to_n_column["xydy"] = 3; // Same as XYDX, but error bars are along Y axis
@@ -39,6 +39,14 @@ Dataset::~Dataset() {
 
 }
 
+void Dataset::append_header_line(QString line) {
+	_header_lines.push_back(line);
+
+	QRegularExpression re_set_start("@\\s*s(\\d+) hidden");
+	QRegularExpressionMatch match = re_set_start.match(line);
+	if(match.hasMatch()) _id_header = match.captured(1).toInt();
+}
+
 void Dataset::append_agr_line(QString line) {
 	QRegularExpression re_graph_set_number("@target G(\\d+).S(\\d+)");
 	QRegularExpression re_type("@type (\\w+)");
@@ -46,10 +54,15 @@ void Dataset::append_agr_line(QString line) {
 	QRegularExpressionMatch number_match = re_graph_set_number.match(line);
 	QRegularExpressionMatch type_match = re_type.match(line);
 	if(number_match.hasMatch()) {
-		_g_s.first = number_match.captured(1).toInt();
-		_g_s.second = number_match.captured(2).toInt();
+		set_id(number_match.captured(2).toInt());
 
-		QString name = QString("G%1.S%2").arg(_g_s.first).arg(_g_s.second);
+		if(_id_header != -1 && id() != _id_header) {
+			qCritical() << "Dataset " << id() << "is being associated to the wrong set" << _id_header;
+			// TODO: to be removed
+			exit(1);
+		}
+
+		QString name = QString("S%1").arg(id());
 		set_name(name);
 	}
 	else if(type_match.hasMatch()) set_type(type_match.captured(1));
@@ -131,8 +144,8 @@ void Dataset::set_name(QString name) {
 	_name = name;
 }
 
-void Dataset::set_g_s(int g, int s) {
-	_g_s = QPair<int, int>(g, s);
+void Dataset::set_id(int n_id) {
+	_id_dataset = n_id;
 }
 
 } /* namespace dg */

@@ -10,6 +10,7 @@
 
 #include <QString>
 #include <QVector>
+#include <QMap>
 #include <QRegularExpression>
 
 #include "../AgrObjects/AgrDrawingObject.h"
@@ -32,10 +33,15 @@ public:
 private:
 	QVector<QString> _header_lines;
 	QVector<Dataset *> _datasets;
-	QVector<AgrGraph> _graphs;
+	QMap<int, AgrGraph *> _graphs;
 	QVector<AgrRegion> _regions;
 	QVector<AgrDrawingObject> _drawing_objects;
 	QString _filename;
+
+	// needed in the parsing stage
+	QRegularExpressionMatch _last_match;
+	AgrGraph *_curr_graph;
+	Dataset *_curr_dataset;
 
 	bool _has_match(QRegularExpression &re, QString &str);
 	void _check_consistency();
