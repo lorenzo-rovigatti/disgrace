@@ -39,6 +39,7 @@ public slots:
 	void toggle_legend(bool);
 	void toggle_drag_legend(bool);
 	void export_as_pdf();
+	void save_as();
 	void import_datasets(ImportDatasetResult &);
 
 	void axis_double_click(QCPAxis *, QCPAxis::SelectablePart);

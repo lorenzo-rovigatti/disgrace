@@ -30,6 +30,7 @@ public:
 	QList<AgrGraph *> graphs() { return _graphs.values(); }
 	QList<Dataset *> datasets(int graph_id = 0);
 	void plot();
+	void write_to(QString filename);
 
 private:
 	QVector<QString> _header_lines;

@@ -105,7 +105,7 @@ void AgrGraph::add_datasets_from_file(QString filename) {
 		// TODO: to be removed
 	}
 
-	int max_idx = (_sorted_datasets.empty()) ? 0 : *std::max_element(_sorted_datasets.constBegin(), _sorted_datasets.constEnd());
+	int max_idx = (_sorted_datasets.empty()) ? -1 : *std::max_element(_sorted_datasets.constBegin(), _sorted_datasets.constEnd());
 
 	while(!input.atEnd()) {
 		max_idx++;
@@ -155,6 +155,22 @@ void AgrGraph::parse_line(QString &line) {
 		qCritical() << "Could not parse graph line";
 		// TODO: to be removed
 		exit(1);
+	}
+}
+
+void AgrGraph::write_headers(QTextStream &ts) {
+	foreach(QString line, _lines) {
+		ts << line << "\n";
+	}
+
+	foreach(Dataset *dataset, _datasets.values()) {
+		dataset->write_headers(ts);
+	}
+}
+
+void AgrGraph::write_datasets(QTextStream &ts) {
+	foreach(Dataset *dataset, _datasets.values()) {
+		dataset->write_dataset(ts);
 	}
 }
 

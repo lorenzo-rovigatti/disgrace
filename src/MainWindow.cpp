@@ -44,6 +44,7 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	QObject::connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
 	QObject::connect(_ui->action_toggle_drag_legend, &QAction::triggered, this, &MainWindow::toggle_drag_legend);
 	QObject::connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
+	QObject::connect(_ui->action_save_as, &QAction::triggered, this, &MainWindow::save_as);
 	QObject::connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
 	QObject::connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
 	QObject::connect(_ui->action_set_appearance, &QAction::triggered, _set_appearance_dialog, &SetAppearance::show);
@@ -142,6 +143,11 @@ void MainWindow::push_command(QUndoCommand *nc) {
 void MainWindow::export_as_pdf() {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Export to..."), "", tr("PDF files(*.pdf)"));
 	if(filename.size() > 0) write_to_pdf(filename);
+}
+
+void MainWindow::save_as() {
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save as..."), "", tr("Agr files(*.agr)"));
+	if(filename.size() > 0) _agr_file->write_to(filename);
 }
 
 void MainWindow::write_to_pdf(QString filename) {

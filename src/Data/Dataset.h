@@ -41,6 +41,9 @@ public:
 	void append_agr_line(QString line);
 	void init_from_file(QFile &input, QString type);
 
+	void write_headers(QTextStream &ts);
+	void write_dataset(QTextStream &ts);
+
 	QString name() { return _name; }
 	bool empty() { return x.empty(); }
 	int id() { return _id_dataset; }

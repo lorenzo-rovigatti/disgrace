@@ -45,13 +45,13 @@ public:
 	void add_datasets_from_file(QString filename);
 
 	void parse_line(QString &line);
-	QList<Dataset *> datasets() {
-		return _datasets.values();
-	}
+	void write_headers(QTextStream &ts);
+	void write_datasets(QTextStream &ts);
 
 	void set_id(int n_id) { _id_graph = n_id; }
 
 	int id() { return _id_graph; }
+	QList<Dataset *> datasets() { return _datasets.values(); }
 	Dataset *dataset(int d_id);
 	void plot();
 

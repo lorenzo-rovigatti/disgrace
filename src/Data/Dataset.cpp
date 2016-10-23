@@ -77,7 +77,8 @@ SetAppearanceDetails Dataset::appearance() {
 
 QPen Dataset::_pen() {
 	QPen pen(_default_pen);
-	int id_colour = id() % QColorDialog::customCount();
+	// +1 because we don't want to have white pens
+	int id_colour = (id() % (QColorDialog::customCount() - 1)) + 1;
 	pen.setColor(QColorDialog::customColor(id_colour));
 
 	return pen;
@@ -205,6 +206,19 @@ void Dataset::set_name(QString name) {
 
 void Dataset::set_id(int n_id) {
 	_id_dataset = n_id;
+}
+
+void Dataset::write_headers(QTextStream &ts) {
+	foreach(QString line, _header_lines) {
+		ts << line << '\n';
+	}
+}
+
+void Dataset::write_dataset(QTextStream &ts) {
+	for(int i = 0; i < x.size(); i++) {
+		if(_type == "xy") ts << x.at(i) << " " << y.at(i) << '\n';
+	}
+	ts << "&" << '\n';
 }
 
 } /* namespace dg */

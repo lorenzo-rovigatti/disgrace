@@ -9,12 +9,14 @@
 
 #include <QFile>
 #include <QDebug>
+#include <iostream>
 
 namespace dg {
 
 AgrFile::AgrFile(QCustomPlot *plot): _plot(plot), _curr_graph(NULL), _curr_dataset(NULL) {
 	// initialise the QCustomPlot instance
 	_plot->plotLayout()->clear();
+	_plot->setAutoAddPlottableToLegend(false);
 
 	// xmgrace defaults (with some differences)
 	_custom_colours.push_back(QColor(255, 255, 255));
@@ -60,6 +62,28 @@ void AgrFile::plot() {
 
 	_plot->rescaleAxes();
 	_plot->replot();
+}
+
+void AgrFile::write_to(QString filename) {
+	QFile fh(filename);
+	if(!fh.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		qCritical() << "File" << filename << "is not writable";
+		// TODO: to be removed;
+		exit(1);
+	}
+
+	QTextStream out(&fh);
+	foreach(QString line, _header_lines) {
+		out << line << '\n';
+	}
+
+	foreach(AgrGraph *graph, _graphs.values()) {
+		graph->write_headers(out);
+	}
+
+	foreach(AgrGraph *graph, _graphs.values()) {
+		graph->write_datasets(out);
+	}
 }
 
 bool AgrFile::parse_agr(QString filename) {
