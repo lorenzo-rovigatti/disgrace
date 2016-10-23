@@ -116,6 +116,7 @@ void AgrGraph::add_datasets_from_file(QString filename) {
 
 void AgrGraph::_new_dataset(int id) {
 	_curr_dataset = new Dataset();
+	_curr_dataset->set_id(id);
 	_datasets[id] = _curr_dataset;
 	_sorted_datasets.push_back(id);
 

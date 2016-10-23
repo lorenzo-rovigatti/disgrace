@@ -38,6 +38,7 @@ private:
 	QVector<AgrDrawingObject> _drawing_objects;
 	QString _filename;
 	QCustomPlot *_plot;
+	QVector<QColor> _custom_colours;
 
 	// needed in the parsing stage
 	QRegularExpressionMatch _last_match;

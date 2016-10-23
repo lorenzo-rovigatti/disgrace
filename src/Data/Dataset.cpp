@@ -75,11 +75,19 @@ SetAppearanceDetails Dataset::appearance() {
 	return res;
 }
 
+QPen Dataset::_pen() {
+	QPen pen(_default_pen);
+	int id_colour = id() % QColorDialog::customCount();
+	pen.setColor(QColorDialog::customColor(id_colour));
+
+	return pen;
+}
+
 void Dataset::create_plottable(QCPAxisRect *axis_rect) {
 	if(_type == "xy") {
 		_plottable = new QCPCurve(axis_rect->axis(QCPAxis::atBottom), axis_rect->axis(QCPAxis::atLeft));
 		_plottable->setName(name());
-		_plottable->setPen(_default_pen);
+		_plottable->setPen(_pen());
 		_set_plottable_data();
 	}
 }

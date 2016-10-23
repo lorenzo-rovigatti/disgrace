@@ -67,7 +67,6 @@ void SetAppearance::pick_colour() {
 	foreach(QWidget *w, widgets) {
 		QLineEdit *le = dynamic_cast<QLineEdit *>(w);
 		if(le) {
-			qDebug() << w;
 			const QColor colour = QColorDialog::getColor(QColor(le->text()), this, tr("Pick a colour"));
 			if(colour.isValid()) le->setText(colour.name());
 		}

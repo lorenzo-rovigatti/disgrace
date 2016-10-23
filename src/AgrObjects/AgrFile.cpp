@@ -15,6 +15,24 @@ namespace dg {
 AgrFile::AgrFile(QCustomPlot *plot): _plot(plot), _curr_graph(NULL), _curr_dataset(NULL) {
 	// initialise the QCustomPlot instance
 	_plot->plotLayout()->clear();
+
+	// xmgrace defaults (with some differences)
+	_custom_colours.push_back(QColor(255, 255, 255));
+	_custom_colours.push_back(QColor(0, 0, 0));
+	_custom_colours.push_back(QColor(255, 0, 0));
+	_custom_colours.push_back(QColor(0, 255, 0));
+	_custom_colours.push_back(QColor(0, 0, 255));
+	_custom_colours.push_back(QColor(255, 165, 0));
+	_custom_colours.push_back(QColor(188, 143, 143));
+	_custom_colours.push_back(QColor(200, 200, 200));
+	_custom_colours.push_back(QColor(148, 0 , 211));
+	_custom_colours.push_back(QColor(0, 255, 255));
+	_custom_colours.push_back(QColor(255, 255, 0));
+	_custom_colours.push_back(QColor(255, 0, 255));
+	_custom_colours.push_back(QColor(114, 33, 188));
+	_custom_colours.push_back(QColor(103, 7, 72));
+	_custom_colours.push_back(QColor(64, 224, 208));
+	_custom_colours.push_back(QColor(0, 139, 0));
 }
 
 AgrFile::~AgrFile() {
@@ -32,6 +50,10 @@ QList<Dataset *> AgrFile::datasets(int graph_id) {
 }
 
 void AgrFile::plot() {
+	for(int i = 0; i < QColorDialog::customCount() && i < _custom_colours.size(); i++) {
+		QColorDialog::setCustomColor(i, _custom_colours[i]);
+	}
+
 	foreach(AgrGraph *graph, _graphs.values()) {
 		graph->plot();
 	}
@@ -200,7 +222,6 @@ bool AgrFile::parse_agr(QString filename) {
 }
 
 void AgrFile::parse_text(QString filename, int graph_id) {
-	qDebug() << _graphs.empty();
 	AgrGraph *graph;
 	if(_graphs.empty()) {
 		graph = new AgrGraph(_plot);
