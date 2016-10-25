@@ -43,7 +43,7 @@ set(SOURCES
 	src/AgrObjects/AgrRegion.cpp
 	src/AgrObjects/AgrDrawingObject.cpp
 	src/AgrObjects/AgrGraph.cpp
-	src/AgrObjects/AgrOption.cpp
+	src/AgrObjects/AgrSettings.cpp
 )
 
 set(UI_SOURCES
@@ -52,8 +52,11 @@ set(UI_SOURCES
 	src/Dialogs/SetAppearance.ui
 )
 
+find_package( Boost 1.40 COMPONENTS program_options REQUIRED )
+include_directories(${Boost_INCLUDE_DIR})
+
 qt5_wrap_ui(UI_GENERATED_HEADERS ${UI_SOURCES})
 
 add_executable(disgrace ${SOURCES} ${UI_GENERATED_HEADERS})
 
-target_link_libraries(disgrace ${QT5_LIBRARIES})
+target_link_libraries(disgrace ${QT5_LIBRARIES} ${Boost_LIBRARIES})

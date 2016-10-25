@@ -89,8 +89,7 @@ void AgrGraph::_initialise(QCustomPlot *plot) {
 
 void AgrGraph::plot() {
 	foreach(Dataset *dataset, _datasets.values()) {
-		dataset->create_plottable(_axis_rect);
-		_legend->addItem(new QCPPlottableLegendItem(_legend, dataset->plottable()));
+		dataset->create_plottable(_axis_rect, _legend);
 	}
 }
 
@@ -102,7 +101,6 @@ void AgrGraph::add_datasets_from_file(QString filename) {
 	QFile input(filename);
 	if(!input.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		qCritical() << "File" << filename << "is not readable";
-		// TODO: to be removed
 	}
 
 	int max_idx = (_sorted_datasets.empty()) ? -1 : *std::max_element(_sorted_datasets.constBegin(), _sorted_datasets.constEnd());

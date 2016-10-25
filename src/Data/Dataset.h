@@ -15,7 +15,7 @@
 #include <QFile>
 #include <QPair>
 #include "../qcustomplot/qcustomplot.h"
-#include "../AgrObjects/AgrOption.h"
+#include "../AgrObjects/AgrSettings.h"
 
 namespace dg {
 
@@ -31,12 +31,11 @@ public:
 	QVector<double> x, y, z, dx, dy, dz;
 
 	void set_type(QString type);
-	void set_name(QString name);
 	void set_id(int n_id);
 	void set_appearance(SetAppearanceDetails &new_appearance);
 
 	SetAppearanceDetails appearance();
-	void create_plottable(QCPAxisRect *axis_rect);
+	void create_plottable(QCPAxisRect *axis_rect, QCPLegend *rect_legend);
 
 	void append_header_line(QString line);
 	void append_agr_line(QString line);
@@ -45,13 +44,12 @@ public:
 	void write_headers(QTextStream &ts);
 	void write_dataset(QTextStream &ts);
 
-	QString name() { return _name; }
 	bool empty() { return x.empty(); }
 	int id() { return _id_dataset; }
 	QCPAbstractPlottable *plottable() { return _plottable; }
 
 	// getters and setters
-	bool is_visible();
+	bool visible();
 	void set_visible(bool is_visible);
 
 	QString legend();
@@ -61,7 +59,6 @@ signals:
 	void changed(Dataset *);
 
 private:
-	QString _name;
 	QString _type;
 	/// id of the dataset. It is unique on a per-graph basis.
 	int _id_dataset;
@@ -72,8 +69,10 @@ private:
 	/// associated QCustomPlot plottable
 	QCPAbstractPlottable *_plottable;
 	QPen _default_pen;
+	/// legend of the associated QCPAxis
+	QCPLegend *_legend;
 
-	AgrOption _options;
+	AgrSettings _settings;
 
 	// TODO: we should not keep a copy of these in each instance...
 	QMap<QString, int> _type_to_n_column;

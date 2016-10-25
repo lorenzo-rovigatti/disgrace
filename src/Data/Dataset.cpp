@@ -7,13 +7,14 @@
 
 #include "Dataset.h"
 
+#include <iostream>
 #include <QRegularExpression>
 #include <QDebug>
 #include "../Commands/defs.h"
 
 namespace dg {
 
-Dataset::Dataset(): _name(""), _type(""), _id_dataset(-1), _id_header(-1), _plottable(NULL), _options(NULL, "s%1") {
+Dataset::Dataset(): _type(""), _id_dataset(-1), _id_header(-1), _plottable(NULL), _legend(NULL) {
 	_type_to_n_column["xy"] = 2; // An X-Y scatter and/or line plot, plus (optionally) an annotated value
 	_type_to_n_column["xydx"] = 3; // Same as XY, but with error bars (either one- or two-sided) along X axis
 	_type_to_n_column["xydy"] = 3; // Same as XYDX, but error bars are along Y axis
@@ -32,6 +33,13 @@ Dataset::Dataset(): _name(""), _type(""), _id_dataset(-1), _id_header(-1), _plot
 	_type_to_n_column["xycolpat"] = 4; // X, Y, color index, pattern index (currently used for Pie charts only)
 	_type_to_n_column["xyvmap"] = 4; // Vector map
 	_type_to_n_column["xyboxplot"] = 6; // Box plot (X, median, upper/lower limit, upper/lower whisker)
+
+	QStringList to_be_quoted;
+	to_be_quoted << "legend"
+			<< "comment"
+			<< "avalue prepend"
+			<< "avalue append";
+	_settings.set_paths_to_be_quoted(to_be_quoted);
 
 	_implemented_types << "xy";
 	_default_pen.setWidth(2);
@@ -84,34 +92,36 @@ QPen Dataset::_pen() {
 	return pen;
 }
 
-void Dataset::create_plottable(QCPAxisRect *axis_rect) {
+void Dataset::create_plottable(QCPAxisRect *axis_rect, QCPLegend *rect_legend) {
+	_legend = rect_legend;
+
 	if(_type == "xy") {
 		_plottable = new QCPCurve(axis_rect->axis(QCPAxis::atBottom), axis_rect->axis(QCPAxis::atLeft));
-		_plottable->setName(name());
 		_plottable->setPen(_pen());
 		_set_plottable_data();
 	}
 
 	set_legend(legend());
+	set_visible(visible());
 }
 
-bool Dataset::is_visible() {
-	QString res = _options.value_recursive_as_string("hidden");
-	return (res == "false");
+bool Dataset::visible() {
+	return !_settings.get<bool>("hidden");
 }
 
 void Dataset::set_visible(bool is_visible) {
+	if(is_visible) _plottable->addToLegend(_legend);
+	else _plottable->removeFromLegend(_legend);
 	_plottable->setVisible(is_visible);
 }
 
 QString Dataset::legend() {
-	return _options.value_recursive_as_string("legend");
+	qDebug() << _settings.get<QString>("legend").endsWith('"');
+	return _settings.get<QString>("legend");
 }
 
 void Dataset::set_legend(QString new_legend) {
-	QStringList lst;
-	lst << "legend" << legend();
-	_options.set_descendant(lst, new_legend);
+	_settings.put("legend", new_legend);
 	_plottable->setName(new_legend);
 }
 
@@ -122,15 +132,13 @@ void Dataset::append_header_line(QString line) {
 	QRegularExpressionMatch match = re_set_start.match(line);
 	if(match.hasMatch()) _id_header = match.captured(1).toInt();
 
-	QRegularExpression re_option("@\\s*s(\\d+) (.*)");
+	// this RE matches lines like "@  s9 key1 ... value"
+	QRegularExpression re_option("@\\s*s(\\d+) (.+)\\s+(.+)$");
 	match = re_option.match(line);
 	if(!match.hasMatch()) {
 		qCritical() << "Set" << _id_header << "contains the line" << line << "which does not refer to itself";
 	}
-	else {
-		QStringList lst = match.captured(2).split(QRegExp("\\s+"));
-		_options.append_child_recursively(lst);
-	}
+	else _settings.put(match.captured(2), match.captured(3));
 }
 
 void Dataset::append_agr_line(QString line) {
@@ -203,7 +211,7 @@ void Dataset::init_from_file(QFile &input, QString type) {
 		else if(!empty()) return;
 	}
 
-	set_name(input.fileName());
+	_settings.put("legend", input.fileName());
 }
 
 void Dataset::_set_plottable_data() {
@@ -233,18 +241,14 @@ void Dataset::set_type(QString type) {
 	_type = type;
 }
 
-void Dataset::set_name(QString name) {
-	_name = name;
-}
-
 void Dataset::set_id(int n_id) {
 	_id_dataset = n_id;
 }
 
 void Dataset::write_headers(QTextStream &ts) {
-	QString prefix = QString("@    ");
-	foreach(QString line, _options.as_string_list()) {
-		ts << prefix << line.arg(id()) << '\n';
+	QString prefix = QString("@    s%1 ").arg(id());
+	foreach(QString line, _settings.as_string_list()) {
+		ts << prefix << line << '\n';
 	}
 }
 
