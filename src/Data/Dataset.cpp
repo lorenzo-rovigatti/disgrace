@@ -13,7 +13,7 @@
 
 namespace dg {
 
-Dataset::Dataset(): _name(""), _type(""), _id_dataset(-1), _id_header(-1), _plottable(NULL) {
+Dataset::Dataset(): _name(""), _type(""), _id_dataset(-1), _id_header(-1), _plottable(NULL), _options(NULL, "s%1") {
 	_type_to_n_column["xy"] = 2; // An X-Y scatter and/or line plot, plus (optionally) an annotated value
 	_type_to_n_column["xydx"] = 3; // Same as XY, but with error bars (either one- or two-sided) along X axis
 	_type_to_n_column["xydy"] = 3; // Same as XYDX, but error bars are along Y axis
@@ -45,7 +45,7 @@ void Dataset::set_appearance(SetAppearanceDetails &new_appearance) {
 	if(_type == "xy") {
 		QCPCurve *graph = static_cast<QCPCurve *>(_plottable);
 
-		graph->setName(new_appearance.legend);
+		set_legend(new_appearance.legend);
 		graph->setPen(new_appearance.line_pen);
 
 		QCPScatterStyle ss((QCPScatterStyle::ScatterShape) new_appearance.symbol_type,
@@ -91,6 +91,28 @@ void Dataset::create_plottable(QCPAxisRect *axis_rect) {
 		_plottable->setPen(_pen());
 		_set_plottable_data();
 	}
+
+	set_legend(legend());
+}
+
+bool Dataset::is_visible() {
+	QString res = _options.value_recursive_as_string("hidden");
+	return (res == "false");
+}
+
+void Dataset::set_visible(bool is_visible) {
+	_plottable->setVisible(is_visible);
+}
+
+QString Dataset::legend() {
+	return _options.value_recursive_as_string("legend");
+}
+
+void Dataset::set_legend(QString new_legend) {
+	QStringList lst;
+	lst << "legend" << legend();
+	_options.set_descendant(lst, new_legend);
+	_plottable->setName(new_legend);
 }
 
 void Dataset::append_header_line(QString line) {
@@ -99,6 +121,16 @@ void Dataset::append_header_line(QString line) {
 	QRegularExpression re_set_start("@\\s*s(\\d+) hidden");
 	QRegularExpressionMatch match = re_set_start.match(line);
 	if(match.hasMatch()) _id_header = match.captured(1).toInt();
+
+	QRegularExpression re_option("@\\s*s(\\d+) (.*)");
+	match = re_option.match(line);
+	if(!match.hasMatch()) {
+		qCritical() << "Set" << _id_header << "contains the line" << line << "which does not refer to itself";
+	}
+	else {
+		QStringList lst = match.captured(2).split(QRegExp("\\s+"));
+		_options.append_child_recursively(lst);
+	}
 }
 
 void Dataset::append_agr_line(QString line) {
@@ -108,6 +140,7 @@ void Dataset::append_agr_line(QString line) {
 	QRegularExpressionMatch number_match = re_graph_set_number.match(line);
 	QRegularExpressionMatch type_match = re_type.match(line);
 	if(number_match.hasMatch()) {
+		_dataset_header_lines.push_back(line);
 		set_id(number_match.captured(2).toInt());
 
 		if(_id_header != -1 && id() != _id_header) {
@@ -115,11 +148,11 @@ void Dataset::append_agr_line(QString line) {
 			// TODO: to be removed
 			exit(1);
 		}
-
-		QString name = QString("S%1").arg(id());
-		set_name(name);
 	}
-	else if(type_match.hasMatch()) set_type(type_match.captured(1));
+	else if(type_match.hasMatch()) {
+		set_type(type_match.captured(1));
+		_dataset_header_lines.push_back(line);
+	}
 	else {
 		if(_type == "") {
 			qCritical() << "Trying to write to an uninitialised dataset";
@@ -146,7 +179,7 @@ void Dataset::init_from_file(QFile &input, QString type) {
 		QString line = QString(input.readLine()).trimmed();
 		if(line[0] != '#' && line.size() > 0) {
 			// the regexp makes it possible to split the line in the presence of *any* whitespace
-			QStringList spl = line.split(QRegExp("\\s"));
+			QStringList spl = line.split(QRegExp("\\s+"));
 			if(n_columns == -1) n_columns = spl.size();
 
 			switch(n_columns) {
@@ -209,12 +242,17 @@ void Dataset::set_id(int n_id) {
 }
 
 void Dataset::write_headers(QTextStream &ts) {
-	foreach(QString line, _header_lines) {
-		ts << line << '\n';
+	QString prefix = QString("@    ");
+	foreach(QString line, _options.as_string_list()) {
+		ts << prefix << line.arg(id()) << '\n';
 	}
 }
 
 void Dataset::write_dataset(QTextStream &ts) {
+	foreach(QString line, _dataset_header_lines) {
+		ts << line << '\n';
+	}
+
 	for(int i = 0; i < x.size(); i++) {
 		if(_type == "xy") ts << x.at(i) << " " << y.at(i) << '\n';
 	}

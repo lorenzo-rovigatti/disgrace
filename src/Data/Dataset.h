@@ -15,6 +15,7 @@
 #include <QFile>
 #include <QPair>
 #include "../qcustomplot/qcustomplot.h"
+#include "../AgrObjects/AgrOption.h"
 
 namespace dg {
 
@@ -49,6 +50,13 @@ public:
 	int id() { return _id_dataset; }
 	QCPAbstractPlottable *plottable() { return _plottable; }
 
+	// getters and setters
+	bool is_visible();
+	void set_visible(bool is_visible);
+
+	QString legend();
+	void set_legend(QString new_legend);
+
 signals:
 	void changed(Dataset *);
 
@@ -60,9 +68,12 @@ private:
 	/// id of the dataset, as found in the header lines of the agr file. If the dataset was not created from an agr then its value is -1.
 	int _id_header;
 	QVector<QString> _header_lines;
+	QVector<QString> _dataset_header_lines;
 	/// associated QCustomPlot plottable
 	QCPAbstractPlottable *_plottable;
 	QPen _default_pen;
+
+	AgrOption _options;
 
 	// TODO: we should not keep a copy of these in each instance...
 	QMap<QString, int> _type_to_n_column;

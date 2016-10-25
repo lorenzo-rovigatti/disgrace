@@ -43,6 +43,7 @@ set(SOURCES
 	src/AgrObjects/AgrRegion.cpp
 	src/AgrObjects/AgrDrawingObject.cpp
 	src/AgrObjects/AgrGraph.cpp
+	src/AgrObjects/AgrOption.cpp
 )
 
 set(UI_SOURCES

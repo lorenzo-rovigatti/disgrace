@@ -134,13 +134,8 @@ void AgrGraph::parse_line(QString &line) {
 			_curr_dataset->append_header_line(line);
 
 			_state = "in_sets";
-			qDebug() << "Parsing a set line";
 		}
-		else {
-			_lines.push_back(line);
-
-			qDebug() << "Parsing a graph line";
-		}
+		else _lines.push_back(line);
 	}
 	else if(_state == "in_sets") {
 		if(match.hasMatch()) {
@@ -148,8 +143,6 @@ void AgrGraph::parse_line(QString &line) {
 			_new_dataset(set_id);
 		}
 		_curr_dataset->append_header_line(line);
-
-		qDebug() << "Parsing a set line";
 	}
 	else {
 		qCritical() << "Could not parse graph line";

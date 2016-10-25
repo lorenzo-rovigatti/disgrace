@@ -116,13 +116,11 @@ bool AgrFile::parse_agr(QString filename) {
 		if(line.size() == 0) continue;
 		if(state == "opened") {
 			_header_lines.push_back(line);
-			qDebug() << line_nr << "adding line to header";
 
 			if(_has_match(re_header_start, line)) state = "in_header";
 		}
 		else if(state == "in_header") {
 			_header_lines.push_back(line);
-			qDebug() << line_nr << "adding line to header";
 
 			if(_has_match(re_header_stop, line)) state = "in_drawing_objects";
 		}
@@ -133,7 +131,7 @@ bool AgrFile::parse_agr(QString filename) {
 				_regions.push_back(AgrRegion());
 				_regions.back().append(line);
 
-				qDebug() << line_nr << "parsing region n." << _regions.size() - 1;
+				qDebug() << "line" << line_nr << "- parsing region n." << _regions.size() - 1;
 			}
 			// ... or by the start of a graph
 			else if(_has_match(re_graph_start, line)) {
@@ -142,14 +140,14 @@ bool AgrFile::parse_agr(QString filename) {
 				_curr_graph = new AgrGraph(_plot, line);
 				_graphs[graph_id] = _curr_graph;
 
-				qDebug() << line_nr << "parsing graph n." << _graphs.size() - 1;
+				qDebug() << "line" << line_nr << "- parsing graph n." << _graphs.size() - 1;
 			}
 			// a proper drawing_objects line
 			else {
 				if(_has_match(re_object_start, line)) _drawing_objects.push_back(AgrDrawingObject());
 				_drawing_objects.back().append(line);
 
-				qDebug() << line_nr << "found object n." << _drawing_objects.size() - 1;
+				qDebug() << "line" << line_nr << "- found object n." << _drawing_objects.size() - 1;
 			}
 		}
 		else if(state == "in_regions") {
@@ -160,14 +158,12 @@ bool AgrFile::parse_agr(QString filename) {
 				_curr_graph = new AgrGraph(_plot, line);
 				_graphs[graph_id] = _curr_graph;
 
-				qDebug() << line_nr << "parsing graph n." << _graphs.size();
+				qDebug() << "line" << line_nr << "- parsing graph n." << _graphs.size();
 			}
 			// a proper region line
 			else {
 				if(_has_match(re_region_start, line)) _regions.push_back(AgrRegion());
 				 _regions.back().append(line);
-
-				qDebug() << line_nr << "adding line to region";
 			}
 		}
 		else if(state == "in_graphs") {
@@ -186,7 +182,7 @@ bool AgrFile::parse_agr(QString filename) {
 				_curr_dataset = _graphs[graph_id]->dataset(set_id);
 				_curr_dataset->append_agr_line(line);
 
-				qDebug() << line_nr << "parsing dataset n." << set_id;
+				qDebug() << "line" << line_nr << "- parsing dataset n." << set_id;
 			}
 			// a new graph
 			else if(_has_match(re_graph_start, line)) {
@@ -194,14 +190,10 @@ bool AgrFile::parse_agr(QString filename) {
 				_curr_graph = new AgrGraph(_plot, line);
 				_graphs[graph_id] = _curr_graph;
 
-				qDebug() << line_nr << "parsing graph n." << _graphs.size() - 1;
+				qDebug() << "line" << line_nr << "- parsing graph n." << _graphs.size() - 1;
 			}
 			// a proper graph line
-			else {
-				_curr_graph->parse_line(line);
-
-				qDebug() << line_nr << "adding line to graph";
-			}
+			else _curr_graph->parse_line(line);
 		}
 		else if(state == "in_datasets") {
 			if(_has_match(re_dataset_start, line)) {
@@ -215,11 +207,9 @@ bool AgrFile::parse_agr(QString filename) {
 				}
 
 				_curr_dataset = _graphs[graph_id]->dataset(set_id);
-				qDebug() << line_nr << "parsing dataset n." << set_id;
+				qDebug() << "line" << line_nr << "- parsing dataset n." << set_id;
 			}
 			_curr_dataset->append_agr_line(line);
-
-			qDebug() << line_nr << "adding line to dataset";
 		}
 		else {
 			QString msg = QString("Could not parse line %1 of %2").arg(line_nr).arg(filename);
