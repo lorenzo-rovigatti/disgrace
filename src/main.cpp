@@ -1,3 +1,6 @@
+#include "MainWindow.h"
+#include "AgrObjects/AgrDefaults.h"
+
 #include <iostream>
 
 #include <QApplication>
@@ -5,8 +8,6 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QFileInfo>
-
-#include "MainWindow.h"
 
 void setup_parser(QCommandLineParser &parser) {
 	parser.setApplicationDescription(QApplication::translate("main", "A qt5-based plotting tool inspired by xmgrace"));
@@ -51,6 +52,8 @@ int main(int argc, char *argv[]) {
 	QCommandLineParser parser;
 	setup_parser(parser);
 	parser.process(app);
+
+	dg::AgrDefaults::init_defaults();
 
 	dg::MainWindow window(&parser);
 

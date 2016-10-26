@@ -89,7 +89,7 @@ void AgrFile::write_to(QString filename) {
 bool AgrFile::parse_agr(QString filename) {
 	_filename = filename;
 
-	QRegularExpression re_header_start("# Grace project file");
+	QRegularExpression re_header_start("# (disgrace|Grace) project file");
 	QRegularExpression re_header_stop("@timestamp def");
 	QRegularExpression re_region_start("@r(\\d+) (on|off)");
 	QRegularExpression re_object_start("@with (\\w+)");
@@ -220,6 +220,7 @@ bool AgrFile::parse_agr(QString filename) {
 
 	if(state == "opened") {
 		qWarning() << "The file is missing the 'Grace project file' header.";
+		_header_lines.clear();
 		return false;
 	}
 

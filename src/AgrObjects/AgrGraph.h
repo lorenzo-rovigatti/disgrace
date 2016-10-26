@@ -12,8 +12,8 @@
 #include <QVector>
 #include <QMap>
 #include "../qcustomplot/qcustomplot.h"
-#include "../Data/Dataset.h"
 #include "../Commands/defs.h"
+#include "Dataset.h"
 
 namespace dg {
 

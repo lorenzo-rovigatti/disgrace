@@ -5,8 +5,8 @@
  *      Author: lorenzo
  */
 
-#ifndef DATASET_H_
-#define DATASET_H_
+#ifndef AGROBJECTS_DATASET_H_
+#define AGROBJECTS_DATASET_H_
 
 #include <QVector>
 #include <QString>
@@ -85,4 +85,4 @@ private:
 
 } /* namespace dg */
 
-#endif /* SRC_DATASET_H_ */
+#endif /* AGROBJECTS_DATASET_H_ */

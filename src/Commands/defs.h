@@ -9,7 +9,7 @@
 #define COMMANDS_DEFS_H_
 
 #include <QPen>
-#include "../Data/Dataset.h"
+#include "../AgrObjects/Dataset.h"
 
 namespace dg {
 

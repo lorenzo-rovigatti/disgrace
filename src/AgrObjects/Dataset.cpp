@@ -6,6 +6,7 @@
  */
 
 #include "Dataset.h"
+#include "AgrDefaults.h"
 
 #include <iostream>
 #include <QRegularExpression>
@@ -40,6 +41,7 @@ Dataset::Dataset(): _type(""), _id_dataset(-1), _id_header(-1), _plottable(NULL)
 			<< "avalue prepend"
 			<< "avalue append";
 	_settings.set_paths_to_be_quoted(to_be_quoted);
+	_settings.overwrite_settings_from(AgrDefaults::dataset());
 
 	_implemented_types << "xy";
 	_default_pen.setWidth(2);
@@ -72,7 +74,7 @@ SetAppearanceDetails Dataset::appearance() {
 		QCPCurve *graph = static_cast<QCPCurve *>(_plottable);
 
 		res.dataset = this;
-		res.legend = graph->name();
+		res.legend = legend();
 		res.line_pen = graph->pen();
 
 		res.symbol_type = graph->scatterStyle().shape();
@@ -110,19 +112,23 @@ bool Dataset::visible() {
 }
 
 void Dataset::set_visible(bool is_visible) {
-	if(is_visible) _plottable->addToLegend(_legend);
-	else _plottable->removeFromLegend(_legend);
-	_plottable->setVisible(is_visible);
+	_settings.put_bool("hidden", !is_visible);
+
+	if(_plottable) {
+		if(is_visible) _plottable->addToLegend(_legend);
+		else _plottable->removeFromLegend(_legend);
+		_plottable->setVisible(is_visible);
+	}
 }
 
 QString Dataset::legend() {
-	qDebug() << _settings.get<QString>("legend").endsWith('"');
 	return _settings.get<QString>("legend");
 }
 
 void Dataset::set_legend(QString new_legend) {
 	_settings.put("legend", new_legend);
-	_plottable->setName(new_legend);
+
+	if(_plottable != NULL) _plottable->setName(new_legend);
 }
 
 void Dataset::append_header_line(QString line) {
@@ -180,6 +186,8 @@ void Dataset::append_agr_line(QString line) {
 
 void Dataset::init_from_file(QFile &input, QString type) {
 	set_type(type);
+	set_visible(true);
+	set_legend(input.fileName());
 
 	int n_columns = -1;
 	int n_lines = 0;
@@ -190,28 +198,35 @@ void Dataset::init_from_file(QFile &input, QString type) {
 			QStringList spl = line.split(QRegExp("\\s+"));
 			if(n_columns == -1) n_columns = spl.size();
 
-			switch(n_columns) {
-			case 1: {
-				x.push_back(n_lines);
-				double val = spl[0].toDouble();
-				y.push_back(val);
-				break;
-			}
-			case 2:
-			default: {
-				double val = spl[0].toDouble();
-				x.push_back(val);
-				val = spl[1].toDouble();
-				y.push_back(val);
-			}
+			if(spl.size() >= n_columns) {
+				switch(n_columns) {
+				case 0:
+					break;
+				case 1: {
+					bool cast_ok = false;
+					x.push_back(n_lines);
+					double val = spl[0].toDouble(&cast_ok);
+					if(cast_ok)	y.push_back(val);
+					break;
+				}
+				case 2:
+				default: {
+					bool cast_x_ok = false;
+					bool cast_y_ok = false;
+					double new_x = spl[0].toDouble(&cast_x_ok);
+					double new_y = spl[1].toDouble(&cast_y_ok);
+					if(cast_x_ok && cast_y_ok) {
+						x.push_back(new_x);
+						y.push_back(new_y);
+					}
+				}
+				}
 			}
 
 			n_lines++;
 		}
 		else if(!empty()) return;
 	}
-
-	_settings.put("legend", input.fileName());
 }
 
 void Dataset::_set_plottable_data() {
@@ -239,6 +254,7 @@ void Dataset::_check_type(QString type) {
 void Dataset::set_type(QString type) {
 	_check_type(type);
 	_type = type;
+	_settings.put("type", type);
 }
 
 void Dataset::set_id(int n_id) {

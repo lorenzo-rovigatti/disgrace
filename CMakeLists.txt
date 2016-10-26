@@ -33,17 +33,18 @@ set(SOURCES
 	src/qcustomplot/qcustomplot.cpp
 	src/main.cpp
 	src/MainWindow.cpp
-	src/Data/Dataset.cpp
 	src/Commands/Legend.cpp
 	src/Commands/Axis.cpp
 	src/Commands/Set.cpp
 	src/Dialogs/ImportDataset.cpp
 	src/Dialogs/SetAppearance.cpp
 	src/AgrObjects/AgrFile.cpp
+	src/AgrObjects/Dataset.cpp
 	src/AgrObjects/AgrRegion.cpp
 	src/AgrObjects/AgrDrawingObject.cpp
 	src/AgrObjects/AgrGraph.cpp
 	src/AgrObjects/AgrSettings.cpp
+	src/AgrObjects/AgrDefaults.cpp
 )
 
 set(UI_SOURCES

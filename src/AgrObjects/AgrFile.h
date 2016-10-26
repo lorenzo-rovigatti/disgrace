@@ -16,7 +16,7 @@
 #include "../AgrObjects/AgrDrawingObject.h"
 #include "../AgrObjects/AgrGraph.h"
 #include "../AgrObjects/AgrRegion.h"
-#include "../Data/Dataset.h"
+#include "../AgrObjects/Dataset.h"
 
 namespace dg {
 

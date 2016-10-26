@@ -195,15 +195,18 @@ QVariant AgrGraph::data(const QModelIndex& index, int role) const {
 
 	int n_set = index.row();
 	QVariant res;
-	QCPCurve *graph = static_cast<QCPCurve *>(_datasets[_sorted_datasets[n_set]]->plottable());
+	Dataset *dataset = _datasets[_sorted_datasets[n_set]];
+	QCPCurve *graph = static_cast<QCPCurve *>(dataset->plottable());
 
 	if(role == Qt::DisplayRole || role == Qt::EditRole) {
 		switch(index.column()) {
-		case Name:
-			res = tr("Set %1 [%2]").arg(n_set).arg(graph->dataCount());
+		case Name: {
+			char plus_minus = (dataset->visible()) ? '+' : '-';
+			res = tr("(%1) Set %2 [%3]").arg(plus_minus).arg(n_set).arg(graph->dataCount());
 			break;
+		}
 		case Legend:
-			res = graph->name();
+			res = dataset->legend();
 			break;
 		case LineStyle:
 			res = QString::number(graph->pen().style());
