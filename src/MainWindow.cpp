@@ -27,10 +27,15 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	const QStringList args = parser->positionalArguments();
 	qDebug() << "Passed in" << args.size() << "file(s)";
 
+	bool rescale = false;
 	foreach(QString filename, args) {
-		if(!_agr_file->parse_agr(filename)) _agr_file->parse_text(filename);
+		if(!_agr_file->parse_agr(filename)) {
+			_agr_file->parse_text(filename);
+			rescale = true;
+		}
 	}
-	_agr_file->plot();
+	_plot->replot();
+	if(rescale) _plot->rescaleAxes();
 
 	_import_dataset_dialog = new ImportDataset(this);
 	_set_appearance_dialog = new SetAppearance(_agr_file, this);
@@ -132,10 +137,6 @@ void MainWindow::before_replot() {
 	_plot->legend->setMaximumSize(_plot->legend->minimumSizeHint());
 }
 
-void MainWindow::replot() {
-	_plot->replot();
-}
-
 void MainWindow::push_command(QUndoCommand *nc) {
 	_undo_stack->push(nc);
 }
@@ -158,7 +159,7 @@ void MainWindow::import_datasets(ImportDatasetResult &res) {
 	bool rescale_x = res.autoscale.contains('X');
 	bool rescale_y = res.autoscale.contains('Y');
 
-//	_data_manager->add_datasets_from_file(res.filename);
+	_agr_file->parse_text(res.filename);
 
 	if(rescale_x) {
 		_plot->xAxis->rescale();
@@ -168,6 +169,8 @@ void MainWindow::import_datasets(ImportDatasetResult &res) {
 		_plot->yAxis->rescale();
 		_plot->yAxis2->rescale();
 	}
+
+	_plot->replot();
 }
 
 void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) {

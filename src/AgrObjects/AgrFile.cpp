@@ -35,6 +35,10 @@ AgrFile::AgrFile(QCustomPlot *plot): _plot(plot), _curr_graph(NULL), _curr_datas
 	_custom_colours.push_back(QColor(103, 7, 72));
 	_custom_colours.push_back(QColor(64, 224, 208));
 	_custom_colours.push_back(QColor(0, 139, 0));
+
+	for(int i = 0; i < QColorDialog::customCount() && i < _custom_colours.size(); i++) {
+		QColorDialog::setCustomColor(i, _custom_colours[i]);
+	}
 }
 
 AgrFile::~AgrFile() {
@@ -49,19 +53,6 @@ QList<Dataset *> AgrFile::datasets(int graph_id) {
 	}
 
 	return _graphs[graph_id]->datasets();
-}
-
-void AgrFile::plot() {
-	for(int i = 0; i < QColorDialog::customCount() && i < _custom_colours.size(); i++) {
-		QColorDialog::setCustomColor(i, _custom_colours[i]);
-	}
-
-	foreach(AgrGraph *graph, _graphs.values()) {
-		graph->plot();
-	}
-
-	_plot->rescaleAxes();
-	_plot->replot();
 }
 
 void AgrFile::write_to(QString filename) {
@@ -223,6 +214,8 @@ bool AgrFile::parse_agr(QString filename) {
 		_header_lines.clear();
 		return false;
 	}
+
+	foreach(AgrGraph *graph, _graphs) graph->setup_new_datasets();
 
 	// TODO: add support for multiple plots
 	if(_graphs.size() > 1) {

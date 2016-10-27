@@ -14,6 +14,8 @@
 #include "../qcustomplot/qcustomplot.h"
 #include "../Commands/defs.h"
 #include "Dataset.h"
+#include "AgrSettings.h"
+#include "AgrDefaults.h"
 
 namespace dg {
 
@@ -53,7 +55,7 @@ public:
 	int id() { return _id_graph; }
 	QList<Dataset *> datasets() { return _datasets.values(); }
 	Dataset *dataset(int d_id);
-	void plot();
+	void setup_new_datasets();
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 	int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -79,7 +81,6 @@ protected:
 	QCPLegend *_legend;
 	Dataset *_curr_dataset;
 
-	QVector<QString> _lines;
 	QMap<int, Dataset *> _datasets;
 	QVector<int> _sorted_datasets;
 	QString _state;
@@ -87,6 +88,8 @@ protected:
 
 	SetAppearanceDetails _old_appearance;
 	SetAppearanceDetails _new_appearance;
+
+	AgrSettings _settings;
 
 	void _new_dataset(int id);
 	void _initialise_axis(QCPAxis *axis);

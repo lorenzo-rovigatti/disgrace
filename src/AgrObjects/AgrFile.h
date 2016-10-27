@@ -29,7 +29,6 @@ public:
 	void parse_text(QString filename, int graph_id = 0);
 	QList<AgrGraph *> graphs() { return _graphs.values(); }
 	QList<Dataset *> datasets(int graph_id = 0);
-	void plot();
 	void write_to(QString filename);
 
 private:

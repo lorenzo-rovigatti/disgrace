@@ -20,7 +20,7 @@ include_directories(${Qt5Widgets_INCLUDES})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/qcustomplot)
 
 add_definitions(-DQT_MESSAGELOGCONTEXT) 
-add_definitions(-Wall -Wshadow)
+add_definitions(-Wall)
 
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
@@ -53,11 +53,8 @@ set(UI_SOURCES
 	src/Dialogs/SetAppearance.ui
 )
 
-find_package( Boost 1.40 COMPONENTS program_options REQUIRED )
-include_directories(${Boost_INCLUDE_DIR})
-
 qt5_wrap_ui(UI_GENERATED_HEADERS ${UI_SOURCES})
 
 add_executable(disgrace ${SOURCES} ${UI_GENERATED_HEADERS})
 
-target_link_libraries(disgrace ${QT5_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(disgrace ${QT5_LIBRARIES})

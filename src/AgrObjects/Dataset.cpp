@@ -95,6 +95,8 @@ QPen Dataset::_pen() {
 }
 
 void Dataset::create_plottable(QCPAxisRect *axis_rect, QCPLegend *rect_legend) {
+	if(_plottable != NULL) return;
+
 	_legend = rect_legend;
 
 	if(_type == "xy") {
@@ -138,13 +140,13 @@ void Dataset::append_header_line(QString line) {
 	QRegularExpressionMatch match = re_set_start.match(line);
 	if(match.hasMatch()) _id_header = match.captured(1).toInt();
 
-	// this RE matches lines like "@  s9 key1 ... value"
-	QRegularExpression re_option("@\\s*s(\\d+) (.+)\\s+(.+)$");
+	// this RE matches lines like "@  s9 key/values"
+	QRegularExpression re_option("@\\s*s(\\d+) (.+)");
 	match = re_option.match(line);
 	if(!match.hasMatch()) {
 		qCritical() << "Set" << _id_header << "contains the line" << line << "which does not refer to itself";
 	}
-	else _settings.put(match.captured(2), match.captured(3));
+	else _settings.put(match.captured(2));
 }
 
 void Dataset::append_agr_line(QString line) {

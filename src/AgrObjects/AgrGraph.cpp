@@ -22,7 +22,6 @@ AgrGraph::AgrGraph(QCustomPlot *plot) {
 
 AgrGraph::AgrGraph(QCustomPlot *plot, QString &line) {
 	_initialise(plot);
-	_lines.push_back(line);
 	_state = "in_properties";
 
 	QRegularExpression re_graph_start("@g(\\d+) (on|off)");
@@ -65,6 +64,27 @@ void AgrGraph::_initialise(QCustomPlot *plot) {
 	_legend = NULL;
 	_axis_rect = new QCPAxisRect(_plot, true);
 
+	// initialise the setting manager
+	QStringList to_be_quoted;
+	to_be_quoted << "title"
+			<< "subtitle"
+			<< "xaxis label"
+			<< "xaxis ticklabel formula"
+			<< "xaxis ticklabel append"
+			<< "xaxis ticklabel prepend"
+			<< "yaxis label"
+			<< "yaxis ticklabel formula"
+			<< "yaxis ticklabel append"
+			<< "yaxis ticklabel prepend"
+			<< "altxaxis ticklabel formula"
+			<< "altxaxis ticklabel append"
+			<< "altxaxis ticklabel prepend"
+			<< "altyaxis ticklabel formula"
+			<< "altyaxis ticklabel append"
+			<< "altyaxis ticklabel prepend";
+	_settings.set_paths_to_be_quoted(to_be_quoted);
+	_settings.overwrite_settings_from(AgrDefaults::graph());
+
 	// create a top and a right axes, set their visibility to true and then connects their ranges to the bottom and left axes, respectively
 	_axis_rect->setupFullAxesBox(true);
 	foreach(QCPAxis *axis, _axis_rect->axes()) {
@@ -87,7 +107,7 @@ void AgrGraph::_initialise(QCustomPlot *plot) {
 	_legend->setLayer("legend");
 }
 
-void AgrGraph::plot() {
+void AgrGraph::setup_new_datasets() {
 	foreach(Dataset *dataset, _datasets.values()) {
 		dataset->create_plottable(_axis_rect, _legend);
 	}
@@ -109,20 +129,27 @@ void AgrGraph::add_datasets_from_file(QString filename) {
 		max_idx++;
 		_new_dataset(max_idx);
 		_curr_dataset->init_from_file(input, "xy");
+		qDebug() << "Added dataset" << max_idx << "to plot" << id();
 	}
+
+	setup_new_datasets();
 }
 
 void AgrGraph::_new_dataset(int id) {
+	beginInsertRows(QModelIndex(), rowCount() - 1, rowCount());
 	_curr_dataset = new Dataset();
 	_curr_dataset->set_id(id);
 	_datasets[id] = _curr_dataset;
 	_sorted_datasets.push_back(id);
+	endInsertRows();
 
 	connect(_curr_dataset, &Dataset::changed, this, &AgrGraph::replot);
 }
 
 void AgrGraph::parse_line(QString &line) {
 	QRegularExpression re_set_start("@\\s*s(\\d+) hidden");
+	QRegularExpression re_in_header("@g(\\d+) (.+)");
+	QRegularExpression re_in_settings("@\\s+(.+)");
 
 	QRegularExpressionMatch match = re_set_start.match(line);
 	if(_state == "in_properties") {
@@ -133,7 +160,18 @@ void AgrGraph::parse_line(QString &line) {
 
 			_state = "in_sets";
 		}
-		else _lines.push_back(line);
+		else {
+			// this matches the first lines, till @with gID
+			match = re_in_header.match(line);
+			if(match.hasMatch()) {
+				_settings.put(match.captured(2));
+			}
+			else {
+				// this one matches all the lines after @with gID
+				match = re_in_settings.match(line);
+				if(match.hasMatch()) _settings.put(match.captured(1));
+			}
+		}
 	}
 	else if(_state == "in_sets") {
 		if(match.hasMatch()) {
@@ -150,8 +188,14 @@ void AgrGraph::parse_line(QString &line) {
 }
 
 void AgrGraph::write_headers(QTextStream &ts) {
-	foreach(QString line, _lines) {
-		ts << line << "\n";
+	QString prefix = QString("@g%1 ").arg(id());
+	ts << prefix << "on" << '\n';
+	foreach(QString line, _settings.as_string_list()) {
+		if(line.startsWith("world")) {
+			ts << "@with g" << id() << '\n';
+			prefix = "@    ";
+		}
+		ts << prefix << line << '\n';
 	}
 
 	foreach(Dataset *dataset, _datasets.values()) {
@@ -167,7 +211,7 @@ void AgrGraph::write_datasets(QTextStream &ts) {
 
 Dataset *AgrGraph::dataset(int d_id) {
 	if(!_datasets.contains(d_id)) {
-		qCritical() << "Graph" << _id_graph;
+		qCritical() << "There is no dataset" << d_id << "in plot" << _id_graph;
 		// TODO: to be removed
 		exit(1);
 	}

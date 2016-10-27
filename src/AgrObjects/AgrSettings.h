@@ -37,6 +37,12 @@ public:
 	 */
 	void put(QString q_path, QString q_value);
 	/**
+	 * @brief Split line in a key/value pair and add them to the settings tree.
+	 *
+	 * @param line
+	 */
+	void put(QString line);
+	/**
 	 * @brief Put the boolean q_value as the value of the key pointed by q_path.
 	 *
 	 * This is a convenience function that translates a boolean into a string (either "true" or "false") and
@@ -57,6 +63,14 @@ private:
 	QStringList _paths_to_be_quoted;
 
 	QStringList _as_string_list(pt::ptree &tree, QString tot_path);
+	/**
+	 * @brief Sanitises the given path.
+	 *
+	 * q_path is first split into substrings wherever whitespace occurs, and then reconstructed after having trimmed all the substrings.
+	 *
+	 * @param q_path
+	 * @return
+	 */
 	std::string _translate_path(QString q_path);
 };
 
