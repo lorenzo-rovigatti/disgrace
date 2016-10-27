@@ -8,6 +8,8 @@
 #ifndef COMMANDS_DEFS_H_
 #define COMMANDS_DEFS_H_
 
+#define SYMBOL_FACTOR 0.1
+
 #include <QPen>
 #include "../AgrObjects/Dataset.h"
 
@@ -26,6 +28,22 @@ struct SetAppearanceDetails {
 	int symbol_type;
 	int symbol_size;
 	QPen symbol_pen;
+};
+
+struct AxisAppearanceDetails {
+	QCPRange range;
+	QString label;
+};
+
+struct LegendAppearanceDetails {
+	bool visible;
+	QPointF position;
+};
+
+struct GraphAppearanceDetails {
+	bool visible;
+	QList<AxisAppearanceDetails> axes;
+	LegendAppearanceDetails legend;
 };
 
 } /* namespace dg */

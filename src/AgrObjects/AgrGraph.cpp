@@ -146,7 +146,7 @@ void AgrGraph::_new_dataset(int id) {
 	connect(_curr_dataset, &Dataset::changed, this, &AgrGraph::replot);
 }
 
-void AgrGraph::parse_line(QString &line) {
+void AgrGraph::parse_agr_line(QString &line) {
 	QRegularExpression re_set_start("@\\s*s(\\d+) hidden");
 	QRegularExpression re_in_header("@g(\\d+) (.+)");
 	QRegularExpression re_in_settings("@\\s+(.+)");
@@ -185,6 +185,11 @@ void AgrGraph::parse_line(QString &line) {
 		// TODO: to be removed
 		exit(1);
 	}
+}
+
+void AgrGraph::load_agr_settings() {
+	QPair<QCPRange, QCPRange> ranges = get_xy_ranges();
+	set_xy_ranges(ranges.first, ranges.second);
 }
 
 void AgrGraph::write_headers(QTextStream &ts) {
@@ -334,6 +339,22 @@ bool AgrGraph::submit() {
 	emit new_command(nc);
 
 	return true;
+}
+
+QPair<QCPRange, QCPRange> AgrGraph::get_xy_ranges() {
+	QVector<float> world = _settings.get<QVector<float> >("world");
+	if(world.size() != 4) {
+		qCritical() << "The 'world' setting of plot" << id() << "does not contain 4 numbers as it should";
+		// TODO: to be removed
+		exit(1);
+	}
+
+	return QPair<QCPRange, QCPRange>(QCPRange(world[0], world[2]), QCPRange(world[1], world[3]));
+}
+
+void AgrGraph::set_xy_ranges(QCPRange x_range, QCPRange y_range) {
+	_axis_rect->axis(QCPAxis::atBottom, 0)->setRange(x_range);
+	_axis_rect->axis(QCPAxis::atLeft, 0)->setRange(y_range);
 }
 
 } /* namespace dg */

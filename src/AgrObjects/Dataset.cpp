@@ -58,6 +58,9 @@ void Dataset::set_appearance(SetAppearanceDetails &new_appearance) {
 		set_legend(new_appearance.legend);
 		graph->setPen(new_appearance.line_pen);
 
+		_settings.put("symbol", QString::number(new_appearance.symbol_type));
+		_settings.put("symbol size", QString::number(new_appearance.symbol_size*SYMBOL_FACTOR));
+
 		QCPScatterStyle ss((QCPScatterStyle::ScatterShape) new_appearance.symbol_type,
 				new_appearance.symbol_pen.color(),
 				new_appearance.symbol_size);
@@ -77,8 +80,8 @@ SetAppearanceDetails Dataset::appearance() {
 		res.legend = legend();
 		res.line_pen = graph->pen();
 
-		res.symbol_type = graph->scatterStyle().shape();
-		res.symbol_size = graph->scatterStyle().size();
+		res.symbol_type = _settings.get<int>("symbol");
+		res.symbol_size = (int)(_settings.get<float>("symbol size")/SYMBOL_FACTOR);
 		res.symbol_pen = graph->scatterStyle().pen();
 	}
 
@@ -100,13 +103,16 @@ void Dataset::create_plottable(QCPAxisRect *axis_rect, QCPLegend *rect_legend) {
 	_legend = rect_legend;
 
 	if(_type == "xy") {
-		_plottable = new QCPCurve(axis_rect->axis(QCPAxis::atBottom), axis_rect->axis(QCPAxis::atLeft));
+		QCPCurve *new_curve = new QCPCurve(axis_rect->axis(QCPAxis::atBottom), axis_rect->axis(QCPAxis::atLeft));
+		new_curve->setScatterSkip(0);
+		_plottable = new_curve;
 		_plottable->setPen(_pen());
 		_set_plottable_data();
 	}
 
-	set_legend(legend());
 	set_visible(visible());
+	SetAppearanceDetails curr_appearance = appearance();
+	set_appearance(curr_appearance);
 }
 
 bool Dataset::visible() {
@@ -190,6 +196,7 @@ void Dataset::init_from_file(QFile &input, QString type) {
 	set_type(type);
 	set_visible(true);
 	set_legend(input.fileName());
+	_settings.put("comment", input.fileName());
 
 	int n_columns = -1;
 	int n_lines = 0;

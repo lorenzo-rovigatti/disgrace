@@ -11,6 +11,7 @@
 #include <boost/property_tree/info_parser.hpp>
 #include <QRegExp>
 #include <QDebug>
+#include <QRect>
 
 using std::string;
 
@@ -45,6 +46,36 @@ bool AgrSettings::get(QString q_path) {
 template<>
 QString AgrSettings::get(QString q_path) {
 	return QString(get<string>(q_path).c_str());
+}
+
+template<>
+QVector<float> AgrSettings::get(QString q_path) {
+	QString res_str(get<string>(q_path).c_str());
+
+	QStringList numbers = res_str.split(',');
+	QVector<float> res;
+	foreach(QString s, numbers) res << s.toFloat();
+
+	return res;
+}
+
+template<>
+QRectF AgrSettings::get(QString q_path) {
+	QString res_str(get<string>(q_path).c_str());
+
+	QStringList numbers = res_str.split(',');
+	if(numbers.size() != 4) {
+		qCritical() << "Key" << q_path << "has an associated value" << res_str << "which can't be casted to a QRectF";
+		// TODO: to be removed
+		exit(1);
+	}
+	QRectF res;
+	res.setLeft(numbers.at(0).toFloat());
+	res.setBottom(numbers.at(1).toFloat());
+	res.setRight(numbers.at(2).toFloat());
+	res.setTop(numbers.at(3).toFloat());
+
+	return res;
 }
 
 void AgrSettings::put(QString line) {
@@ -118,5 +149,9 @@ string AgrSettings::_translate_path(QString q_path) {
 
 	return trimmed_list.join(' ').toStdString();
 }
+
+template float AgrSettings::get<float>(QString);
+template double AgrSettings::get<double>(QString);
+template int AgrSettings::get<int>(QString);
 
 } /* namespace dg */

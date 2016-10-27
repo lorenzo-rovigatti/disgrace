@@ -29,6 +29,7 @@
 									<listOptionValue builtIn="false" value="/usr/include/qt5"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt5/QtCore"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt5/QtWidgets"/>
+									<listOptionValue builtIn="false" value="/usr/include/qt5/QtGui"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.794995718" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

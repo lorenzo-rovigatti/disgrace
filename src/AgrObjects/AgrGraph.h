@@ -11,6 +11,7 @@
 #include <QString>
 #include <QVector>
 #include <QMap>
+#include <QPair>
 #include "../qcustomplot/qcustomplot.h"
 #include "../Commands/defs.h"
 #include "Dataset.h"
@@ -45,8 +46,9 @@ public:
 	virtual ~AgrGraph();
 
 	void add_datasets_from_file(QString filename);
+	void parse_agr_line(QString &line);
+	void load_agr_settings();
 
-	void parse_line(QString &line);
 	void write_headers(QTextStream &ts);
 	void write_datasets(QTextStream &ts);
 
@@ -63,6 +65,10 @@ public:
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
+
+	// getters and setters
+	QPair<QCPRange, QCPRange> get_xy_ranges();
+	void set_xy_ranges(QCPRange x_range, QCPRange y_range);
 
 public slots:
 	bool submit() Q_DECL_OVERRIDE;

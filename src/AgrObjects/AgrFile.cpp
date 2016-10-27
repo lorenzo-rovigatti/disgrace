@@ -184,7 +184,7 @@ bool AgrFile::parse_agr(QString filename) {
 				qDebug() << "line" << line_nr << "- parsing graph n." << _graphs.size() - 1;
 			}
 			// a proper graph line
-			else _curr_graph->parse_line(line);
+			else _curr_graph->parse_agr_line(line);
 		}
 		else if(state == "in_datasets") {
 			if(_has_match(re_dataset_start, line)) {
@@ -215,7 +215,10 @@ bool AgrFile::parse_agr(QString filename) {
 		return false;
 	}
 
-	foreach(AgrGraph *graph, _graphs) graph->setup_new_datasets();
+	foreach(AgrGraph *graph, _graphs) {
+		graph->load_agr_settings();
+		graph->setup_new_datasets();
+	}
 
 	// TODO: add support for multiple plots
 	if(_graphs.size() > 1) {
