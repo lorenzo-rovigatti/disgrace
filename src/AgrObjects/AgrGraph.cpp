@@ -35,7 +35,7 @@ AgrGraph::AgrGraph(QCustomPlot *plot, QString &line) {
 }
 
 AgrGraph::~AgrGraph() {
-	delete _legend;
+	qDebug() << _plot->plotLayout()->elementCount();
 }
 
 void AgrGraph::_initialise_axis(QCPAxis *axis) {
@@ -105,6 +105,10 @@ void AgrGraph::_initialise(QCustomPlot *plot) {
 	_legend->setFont(legend_font);
 	_legend->setVisible(true);
 	_legend->setLayer("legend");
+}
+
+void AgrGraph::remove() {
+	_plot->plotLayout()->remove(_axis_rect);
 }
 
 void AgrGraph::setup_new_datasets() {
@@ -210,7 +214,7 @@ void AgrGraph::write_headers(QTextStream &ts) {
 
 void AgrGraph::write_datasets(QTextStream &ts) {
 	foreach(Dataset *dataset, _datasets.values()) {
-		dataset->write_dataset(ts);
+		dataset->write_dataset(ts, id());
 	}
 }
 

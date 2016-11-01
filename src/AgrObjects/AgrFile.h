@@ -13,10 +13,11 @@
 #include <QMap>
 #include <QRegularExpression>
 
-#include "../AgrObjects/AgrDrawingObject.h"
-#include "../AgrObjects/AgrGraph.h"
-#include "../AgrObjects/AgrRegion.h"
-#include "../AgrObjects/Dataset.h"
+#include "AgrDrawingObject.h"
+#include "AgrGraph.h"
+#include "AgrRegion.h"
+#include "AgrSettings.h"
+#include "Dataset.h"
 
 namespace dg {
 
@@ -38,15 +39,20 @@ private:
 	QVector<AgrDrawingObject> _drawing_objects;
 	QString _filename;
 	QCustomPlot *_plot;
-	QVector<QColor> _custom_colours;
 
 	// needed in the parsing stage
 	QRegularExpressionMatch _last_match;
 	AgrGraph *_curr_graph;
 	Dataset *_curr_dataset;
 
+	AgrSettings _settings;
+	SettingsMap _settings_map;
+
+	void _add_agr_graph(int graph_id, QString line);
+	void _add_header_line(QString line);
 	bool _has_match(QRegularExpression &re, QString &str);
 	void _check_consistency();
+	void _setup_colours();
 };
 
 } /* namespace dg */

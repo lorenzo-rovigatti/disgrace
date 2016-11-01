@@ -17,10 +17,12 @@ public:
 	static const AgrSettings &dataset() { return _dataset; }
 	static const AgrSettings &graph() { return _graph; }
 	static const AgrSettings &file() { return _file; }
+	static const SettingsMap &settings_map() { return _settings_map; }
 
 	static void set_dataset(const AgrSettings &new_default) { _dataset = new_default; }
 	static void set_graph(const AgrSettings &new_default) { _graph = new_default; }
 	static void set_file(const AgrSettings &new_default) { _file = new_default; }
+	static void set_settings_map(const SettingsMap &new_default) { _settings_map = new_default; }
 
 	static void init_defaults();
 
@@ -31,6 +33,7 @@ private:
 	static AgrSettings _dataset;
 	static AgrSettings _graph;
 	static AgrSettings _file;
+	static SettingsMap _settings_map;
 };
 
 } /* namespace dg */

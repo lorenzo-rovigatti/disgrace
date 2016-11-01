@@ -42,7 +42,7 @@ public:
 	void init_from_file(QFile &input, QString type);
 
 	void write_headers(QTextStream &ts);
-	void write_dataset(QTextStream &ts);
+	void write_dataset(QTextStream &ts, int graph_id);
 
 	bool empty() { return x.empty(); }
 	int id() { return _id_dataset; }
@@ -64,8 +64,6 @@ private:
 	int _id_dataset;
 	/// id of the dataset, as found in the header lines of the agr file. If the dataset was not created from an agr then its value is -1.
 	int _id_header;
-	QVector<QString> _header_lines;
-	QVector<QString> _dataset_header_lines;
 	/// associated QCustomPlot plottable
 	QCPAbstractPlottable *_plottable;
 	QPen _default_pen;

@@ -7,6 +7,8 @@
 
 #include "AgrFile.h"
 
+#include "AgrDefaults.h"
+
 #include <QFile>
 #include <QDebug>
 #include <iostream>
@@ -18,27 +20,18 @@ AgrFile::AgrFile(QCustomPlot *plot): _plot(plot), _curr_graph(NULL), _curr_datas
 	_plot->plotLayout()->clear();
 	_plot->setAutoAddPlottableToLegend(false);
 
-	// xmgrace defaults (with some differences)
-	_custom_colours.push_back(QColor(255, 255, 255));
-	_custom_colours.push_back(QColor(0, 0, 0));
-	_custom_colours.push_back(QColor(255, 0, 0));
-	_custom_colours.push_back(QColor(0, 255, 0));
-	_custom_colours.push_back(QColor(0, 0, 255));
-	_custom_colours.push_back(QColor(255, 165, 0));
-	_custom_colours.push_back(QColor(188, 143, 143));
-	_custom_colours.push_back(QColor(200, 200, 200));
-	_custom_colours.push_back(QColor(148, 0 , 211));
-	_custom_colours.push_back(QColor(0, 255, 255));
-	_custom_colours.push_back(QColor(255, 255, 0));
-	_custom_colours.push_back(QColor(255, 0, 255));
-	_custom_colours.push_back(QColor(114, 33, 188));
-	_custom_colours.push_back(QColor(103, 7, 72));
-	_custom_colours.push_back(QColor(64, 224, 208));
-	_custom_colours.push_back(QColor(0, 139, 0));
+	QStringList to_be_quoted;
+	to_be_quoted << "default sformat"
+			<< "timestamp def";
+	_settings.set_paths_to_be_quoted(to_be_quoted);
+	_settings.overwrite_settings_from(AgrDefaults::file());
+	_settings_map = AgrDefaults::settings_map();
 
-	for(int i = 0; i < QColorDialog::customCount() && i < _custom_colours.size(); i++) {
-		QColorDialog::setCustomColor(i, _custom_colours[i]);
-	}
+	AgrGraph *graph = new AgrGraph(_plot);
+	graph->set_id(0);
+	_graphs[0] = graph;
+
+	_setup_colours();
 }
 
 AgrFile::~AgrFile() {
@@ -64,8 +57,13 @@ void AgrFile::write_to(QString filename) {
 	}
 
 	QTextStream out(&fh);
-	foreach(QString line, _header_lines) {
-		out << line << '\n';
+	out << "# disgrace project file" << '\n';
+	out << "#" << '\n';
+
+	QString prefix("@");
+	foreach(QString line, _settings.as_string_list()) {
+		out << prefix << line << '\n';
+		if(line.startsWith("link page")) _settings_map.write_maps(out);
 	}
 
 	foreach(AgrGraph *graph, _graphs.values()) {
@@ -75,6 +73,37 @@ void AgrFile::write_to(QString filename) {
 	foreach(AgrGraph *graph, _graphs.values()) {
 		graph->write_datasets(out);
 	}
+}
+
+void AgrFile::_add_header_line(QString line) {
+	if(line.startsWith("@")) {
+		line.remove(0, 1);
+		if(line.startsWith("map")) {
+			_settings_map.add_line(line);
+		}
+		else {
+			_settings.put(line);
+		}
+	}
+	else _header_lines.push_back(line);
+}
+
+void AgrFile::_add_agr_graph(int graph_id, QString line) {
+	if(_graphs.contains(graph_id)) {
+		// the only time we overwrite the plot with id graph_id is at the very beginning, when there is only one
+		// empty plot created by the constructor
+		if(graph_id == 0 && _graphs[graph_id]->empty()) {
+			_graphs[0]->remove();
+		}
+		else {
+			QString error = QString("The AGR file contains a plot with id %1, but a plot with that id is already present").arg(graph_id);
+			qCritical() << error;
+			// TODO: to be removed
+			exit(1);
+		}
+	}
+	_curr_graph = new AgrGraph(_plot, line);
+	_graphs[graph_id] = _curr_graph;
 }
 
 bool AgrFile::parse_agr(QString filename) {
@@ -106,12 +135,12 @@ bool AgrFile::parse_agr(QString filename) {
 
 		if(line.size() == 0) continue;
 		if(state == "opened") {
-			_header_lines.push_back(line);
+			_add_header_line(line);
 
 			if(_has_match(re_header_start, line)) state = "in_header";
 		}
 		else if(state == "in_header") {
-			_header_lines.push_back(line);
+			_add_header_line(line);
 
 			if(_has_match(re_header_stop, line)) state = "in_drawing_objects";
 		}
@@ -128,8 +157,7 @@ bool AgrFile::parse_agr(QString filename) {
 			else if(_has_match(re_graph_start, line)) {
 				state = "in_graphs";
 				int graph_id = _last_match.captured(1).toInt();
-				_curr_graph = new AgrGraph(_plot, line);
-				_graphs[graph_id] = _curr_graph;
+				_add_agr_graph(graph_id, line);
 
 				qDebug() << "line" << line_nr << "- parsing graph n." << _graphs.size() - 1;
 			}
@@ -146,8 +174,7 @@ bool AgrFile::parse_agr(QString filename) {
 			if(_has_match(re_graph_start, line)) {
 				state = "in_graphs";
 				int graph_id = _last_match.captured(1).toInt();
-				_curr_graph = new AgrGraph(_plot, line);
-				_graphs[graph_id] = _curr_graph;
+				_add_agr_graph(graph_id, line);
 
 				qDebug() << "line" << line_nr << "- parsing graph n." << _graphs.size();
 			}
@@ -178,8 +205,7 @@ bool AgrFile::parse_agr(QString filename) {
 			// a new graph
 			else if(_has_match(re_graph_start, line)) {
 				int graph_id = _last_match.captured(1).toInt();
-				_curr_graph = new AgrGraph(_plot, line);
-				_graphs[graph_id] = _curr_graph;
+				_add_agr_graph(graph_id, line);
 
 				qDebug() << "line" << line_nr << "- parsing graph n." << _graphs.size() - 1;
 			}
@@ -227,21 +253,20 @@ bool AgrFile::parse_agr(QString filename) {
 		exit(1);
 	}
 
+	_setup_colours();
 	_check_consistency();
 
 	return true;
 }
 
 void AgrFile::parse_text(QString filename, int graph_id) {
-	AgrGraph *graph;
-	if(_graphs.empty()) {
-		graph = new AgrGraph(_plot);
-		graph->set_id(0);
-		_graphs[0] = graph;
+	if(!_graphs.contains(graph_id)) {
+		qCritical() << "There is no plot with id" << graph_id;
+		// TODO: to be removed
+		exit(1);
 	}
-	else graph = _graphs[0];
 
-	graph->add_datasets_from_file(filename);
+	_graphs[graph_id]->add_datasets_from_file(filename);
 }
 
 bool AgrFile::_has_match(QRegularExpression &re, QString &str) {
@@ -251,6 +276,13 @@ bool AgrFile::_has_match(QRegularExpression &re, QString &str) {
 
 void AgrFile::_check_consistency() {
 	// TODO: to be implemented
+}
+
+void AgrFile::_setup_colours() {
+	QList<QColor> colours = _settings_map.colours();
+	for(int i = 0; i < QColorDialog::customCount() && i < colours.size(); i++) {
+		QColorDialog::setCustomColor(i, colours[i]);
+	}
 }
 
 } /* namespace dg */

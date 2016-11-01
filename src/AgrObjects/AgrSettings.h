@@ -9,8 +9,11 @@
 #define AGROBJECTS_AGRSETTINGS_H_
 
 #include <boost/property_tree/ptree.hpp>
+#include <QColor>
 #include <QString>
 #include <QStringList>
+#include <QTextStream>
+#include <QMap>
 #include <string>
 
 namespace pt = boost::property_tree;
@@ -20,7 +23,7 @@ namespace dg {
 /**
  * @brief Thin wrapper around Boost's property tree.
  *
- * This class provides some convenice functions to manage the agr objects' configurations.
+ * This class provides some convenience functions to manage the agr objects' configurations.
  */
 class AgrSettings {
 public:
@@ -46,7 +49,7 @@ public:
 	 * @brief Put the boolean q_value as the value of the key pointed by q_path.
 	 *
 	 * This is a convenience function that translates a boolean into a string (either "true" or "false") and
-	 * writes it into the the settings tree.
+	 * writes it into the the settings tree. A string different from "false" is always written as "true".
 	 *
 	 * @param q_path
 	 * @param q_value
@@ -72,6 +75,26 @@ private:
 	 * @return
 	 */
 	std::string _translate_path(QString q_path);
+};
+
+/**
+ * @brief Incapsulates "@map font/color ID to VALUE, "name"" lines.
+ */
+class SettingsMap {
+	typedef QPair<QColor, QString> colour_pair;
+	typedef QPair<QString, QString> font_pair;
+
+public:
+	SettingsMap();
+	~SettingsMap();
+
+	void add_line(QString line);
+	void write_maps(QTextStream &ts);
+
+	QList<QColor> colours();
+private:
+	QMap<int, colour_pair> _colours;
+	QMap<int, font_pair> _fonts;
 };
 
 } /* namespace dg */

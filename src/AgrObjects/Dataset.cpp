@@ -140,8 +140,6 @@ void Dataset::set_legend(QString new_legend) {
 }
 
 void Dataset::append_header_line(QString line) {
-	_header_lines.push_back(line);
-
 	QRegularExpression re_set_start("@\\s*s(\\d+) hidden");
 	QRegularExpressionMatch match = re_set_start.match(line);
 	if(match.hasMatch()) _id_header = match.captured(1).toInt();
@@ -162,7 +160,6 @@ void Dataset::append_agr_line(QString line) {
 	QRegularExpressionMatch number_match = re_graph_set_number.match(line);
 	QRegularExpressionMatch type_match = re_type.match(line);
 	if(number_match.hasMatch()) {
-		_dataset_header_lines.push_back(line);
 		set_id(number_match.captured(2).toInt());
 
 		if(_id_header != -1 && id() != _id_header) {
@@ -171,10 +168,7 @@ void Dataset::append_agr_line(QString line) {
 			exit(1);
 		}
 	}
-	else if(type_match.hasMatch()) {
-		set_type(type_match.captured(1));
-		_dataset_header_lines.push_back(line);
-	}
+	else if(type_match.hasMatch()) set_type(type_match.captured(1));
 	else {
 		if(_type == "") {
 			qCritical() << "Trying to write to an uninitialised dataset";
@@ -277,10 +271,9 @@ void Dataset::write_headers(QTextStream &ts) {
 	}
 }
 
-void Dataset::write_dataset(QTextStream &ts) {
-	foreach(QString line, _dataset_header_lines) {
-		ts << line << '\n';
-	}
+void Dataset::write_dataset(QTextStream &ts, int graph_id) {
+	ts << "@target G" << graph_id << ".S" << id() << '\n';
+	ts << "@type " << _settings.get<QString>("type") << '\n';
 
 	for(int i = 0; i < x.size(); i++) {
 		if(_type == "xy") ts << x.at(i) << " " << y.at(i) << '\n';

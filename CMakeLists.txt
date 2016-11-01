@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(disgrace)
 
+set(DISGRACE_VERSION 0)
+
 OPTION(G "Set to ON to compile with optimisations and debug symbols" OFF)
 
 IF(G)
@@ -13,17 +15,20 @@ set(CMAKE_AUTOMOC ON)
 # As moc files are generated in the binary dir, tell CMake to always look for includes there:
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+add_definitions(-DQT_MESSAGELOGCONTEXT -Wall -DDISGRACE_VERSION=${DISGRACE_VERSION}) 
+
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5PrintSupport REQUIRED)
+find_package(Boost 1.45.0 REQUIRED)
+
 # The Qt5Widgets_INCLUDES also includes the include directories for dependencies QtCore and QtGui
 include_directories(${Qt5Widgets_INCLUDES})
 
 # This allows ui_MainWindow.h to find qcustomplot.h
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/qcustomplot)
 
-add_definitions(-DQT_MESSAGELOGCONTEXT) 
-add_definitions(-Wall)
-
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5PrintSupport REQUIRED)
+# Boost's headers
+include_directories(${Boost_INCLUDE_DIRS})
 
 set(QT5_LIBRARIES Qt5::Widgets Qt5::PrintSupport)
 

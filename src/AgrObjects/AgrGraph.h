@@ -51,11 +51,16 @@ public:
 
 	void write_headers(QTextStream &ts);
 	void write_datasets(QTextStream &ts);
+	/**
+	 * @brief Removes this plot from the qcustomplot's layout
+	 */
+	void remove();
 
 	void set_id(int n_id) { _id_graph = n_id; }
 
 	int id() { return _id_graph; }
 	QList<Dataset *> datasets() { return _datasets.values(); }
+	bool empty() { return _datasets.empty(); }
 	Dataset *dataset(int d_id);
 	void setup_new_datasets();
 

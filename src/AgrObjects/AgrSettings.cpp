@@ -10,6 +10,7 @@
 #include <iostream>
 #include <boost/property_tree/info_parser.hpp>
 #include <QRegExp>
+#include <QRegularExpression>
 #include <QDebug>
 #include <QRect>
 
@@ -153,5 +154,77 @@ string AgrSettings::_translate_path(QString q_path) {
 template float AgrSettings::get<float>(QString);
 template double AgrSettings::get<double>(QString);
 template int AgrSettings::get<int>(QString);
+
+SettingsMap::SettingsMap() {
+
+}
+
+SettingsMap::~SettingsMap() {
+
+}
+
+void SettingsMap::add_line(QString line) {
+	line = line.trimmed();
+	QString key = line.section("to", 0, 0);
+	QString value = line.section("to", 1);
+
+	QStringList key_lst = key.trimmed().split(QRegExp("\\s+"));
+	QString type = key_lst[1].trimmed();
+	int idx = key_lst[2].toInt();
+	if(type == "color") {
+		QRegularExpression re_colour("\\((\\d+), (\\d+), (\\d+)\\), (\".+\")$");
+		QRegularExpressionMatch match = re_colour.match(value);
+		if(match.hasMatch()) {
+			int r = match.captured(1).toInt();
+			int g = match.captured(2).toInt();
+			int b = match.captured(3).toInt();
+			QString name = match.captured(4);
+			colour_pair new_colour(QColor(r, g, b), name);
+			if(_colours.contains(idx)) qWarning() << "Overwriting colour map" << idx;
+			_colours[idx] = new_colour;
+		}
+	}
+	else if(type == "font") {
+		QRegularExpression my_font("(\".+\"), (\".+\")$");
+		QRegularExpressionMatch match = my_font.match(value);
+		if(match.hasMatch()) {
+			font_pair new_font(match.captured(1), match.captured(2));
+			if(_fonts.contains(idx)) qWarning() << "Overwriting font map" << idx;
+			_fonts[idx] = new_font;
+		}
+	}
+	else {
+		qCritical() << "Map type" << type << "unsupported";
+		// TODO: to be removed
+		exit(1);
+	}
+}
+
+void SettingsMap::write_maps(QTextStream &ts) {
+	foreach(int key, _colours.keys()) {
+		colour_pair cp = _colours.value(key);
+		QString color = QString("(%1, %2, %3)").arg(cp.first.red()).arg(cp.first.green()).arg(cp.first.blue());
+		QString line = QString("@map color %1 to %2, %3\n").arg(key).arg(color).arg(cp.second);
+		ts << line;
+	}
+
+	foreach(int key, _fonts.keys()) {
+		font_pair fp = _fonts.value(key);
+		QString line = QString("@map font %1 to %2, %3\n").arg(key).arg(fp.first).arg(fp.second);
+		ts << line;
+	}
+}
+
+QList<QColor> SettingsMap::colours() {
+	QList<int> keys = _colours.keys();
+	qSort(keys);
+
+	QList<QColor> res;
+	foreach(int key, keys) {
+		res.push_back(_colours.value(key).first);
+	}
+
+	return res;
+}
 
 } /* namespace dg */

@@ -31,6 +31,9 @@
 									<listOptionValue builtIn="false" value="/usr/include/qt5/QtWidgets"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt5/QtGui"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1715505785" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="DISGRACE_VERSION=0"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.794995718" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.2078660966" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
