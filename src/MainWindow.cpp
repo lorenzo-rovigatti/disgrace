@@ -14,11 +14,13 @@ namespace dg {
 
 MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 		QMainWindow(parent), _ui(new Ui::MainWindow),
-		_toggle_drag_legend(false), _dragging_legend(false) {
+		_toggle_drag_legend(false), _dragging_legend(false),
+		_is_unsaved(false) {
 	_ui->setupUi(this);
+	_import_dataset_dialog = new ImportDataset(this);
+	_set_appearance_dialog = new SetAppearance(this);
 
 	_plot = _ui->custom_plot;
-	_agr_file = new AgrFile(_plot);
 
 	_initialise_undo_stack();
 
@@ -27,28 +29,26 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	const QStringList args = parser->positionalArguments();
 	qDebug() << "Passed in" << args.size() << "file(s)";
 
+	_agr_file = NULL;
+	AgrFile *new_file = new AgrFile(_plot);
 	bool rescale = false;
 	foreach(QString filename, args) {
-		if(!_agr_file->parse_agr(filename)) {
-			_agr_file->parse_text(filename);
+		if(!new_file->parse_agr(filename)) {
+			new_file->parse_text(filename);
 			rescale = true;
 		}
 	}
+	_use_agr_file(new_file);
+
 	_plot->replot();
 	if(rescale) _plot->rescaleAxes();
-
-	_import_dataset_dialog = new ImportDataset(this);
-	_set_appearance_dialog = new SetAppearance(_agr_file, this);
-
-	foreach(AgrGraph *graph, _agr_file->graphs()) {
-		// TODO: encapsulate this in a method that can be called when new graphs are added
-		QObject::connect(graph, &AgrGraph::new_command, this, &MainWindow::push_command);
-	}
 
 	QObject::connect(_ui->action_toggle_axis_dragging, &QAction::toggled, this, &MainWindow::toggle_axis_dragging);
 	QObject::connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
 	QObject::connect(_ui->action_toggle_drag_legend, &QAction::triggered, this, &MainWindow::toggle_drag_legend);
 	QObject::connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
+	QObject::connect(_ui->action_open, &QAction::triggered, this, &MainWindow::open);
+	QObject::connect(_ui->action_save, &QAction::triggered, this, &MainWindow::save);
 	QObject::connect(_ui->action_save_as, &QAction::triggered, this, &MainWindow::save_as);
 	QObject::connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
 	QObject::connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
@@ -68,6 +68,44 @@ MainWindow::~MainWindow() {
 	delete _undo_stack;
 	delete _import_dataset_dialog;
 	delete _set_appearance_dialog;
+}
+
+void MainWindow::_on_execute_command() {
+	_is_unsaved = true;
+	_update_title();
+}
+
+void MainWindow::_update_title() {
+	QString new_title("disgrace: ");
+	if(_agr_file->filename().isNull()) {
+		_is_unsaved = true;
+		new_title += tr("[untitled]");
+	}
+	else {
+		new_title += QString(": %1").arg(_agr_file->filename());
+		if(_is_unsaved) new_title += tr(" [unsaved]");
+	}
+
+	setWindowTitle(new_title);
+}
+
+void MainWindow::_use_agr_file(AgrFile *new_file) {
+	if(_agr_file != NULL) {
+		foreach(AgrGraph *graph, _agr_file->graphs()) {
+			// TODO: encapsulate this in a method that can be called when graphs are removed
+			QObject::disconnect(graph, &AgrGraph::new_command, this, &MainWindow::push_command);
+		}
+
+		delete _agr_file;
+	}
+	_agr_file = new_file;
+	_set_appearance_dialog->connect_to_file(_agr_file);
+
+	foreach(AgrGraph *graph, _agr_file->graphs()) {
+		// TODO: encapsulate this in a method that can be called when new graphs are added
+		QObject::connect(graph, &AgrGraph::new_command, this, &MainWindow::push_command);
+	}
+	_update_title();
 }
 
 void MainWindow::toggle_axis_dragging(bool val) {
@@ -146,9 +184,31 @@ void MainWindow::export_as_pdf() {
 	if(filename.size() > 0) write_to_pdf(filename);
 }
 
+void MainWindow::open() {
+	QString filename = QFileDialog::getOpenFileName(this, tr("Open file"), "", tr("Agr files(*.agr)"));
+	if(filename.size() > 0) {
+		AgrFile *new_file = new AgrFile(_plot);
+		new_file->parse_agr(filename);
+		_use_agr_file(new_file);
+	}
+}
+
+void MainWindow::save() {
+	if(_agr_file->filename().isNull()) save_as();
+	else {
+		_agr_file->write_to(_agr_file->filename());
+		_is_unsaved = false;
+		_update_title();
+	}
+}
+
 void MainWindow::save_as() {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save as..."), "", tr("Agr files(*.agr)"));
-	if(filename.size() > 0) _agr_file->write_to(filename);
+	if(filename.size() > 0) {
+		_agr_file->write_to(filename);
+		_is_unsaved = false;
+		_update_title();
+	}
 }
 
 void MainWindow::write_to_pdf(QString filename) {
@@ -198,6 +258,8 @@ void MainWindow::_initialise_undo_stack() {
 
 	_ui->action_redo->setShortcuts(QKeySequence::Redo);
 	QObject::connect(_ui->action_redo, &QAction::triggered, _undo_stack, &QUndoStack::redo);
+
+	QObject::connect(_undo_stack, &QUndoStack::indexChanged, this, &MainWindow::_on_execute_command);
 }
 
 } /* namespace dg */

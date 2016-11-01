@@ -15,7 +15,7 @@
 
 namespace dg {
 
-AgrFile::AgrFile(QCustomPlot *plot): _plot(plot), _curr_graph(NULL), _curr_dataset(NULL) {
+AgrFile::AgrFile(QCustomPlot *plot): _filename(), _plot(plot), _curr_graph(NULL), _curr_dataset(NULL) {
 	// initialise the QCustomPlot instance
 	_plot->plotLayout()->clear();
 	_plot->setAutoAddPlottableToLegend(false);
@@ -27,9 +27,7 @@ AgrFile::AgrFile(QCustomPlot *plot): _plot(plot), _curr_graph(NULL), _curr_datas
 	_settings.overwrite_settings_from(AgrDefaults::file());
 	_settings_map = AgrDefaults::settings_map();
 
-	AgrGraph *graph = new AgrGraph(_plot);
-	graph->set_id(0);
-	_graphs[0] = graph;
+	_add_graph(new AgrGraph(_plot), 0);
 
 	_setup_colours();
 }
@@ -49,6 +47,8 @@ QList<Dataset *> AgrFile::datasets(int graph_id) {
 }
 
 void AgrFile::write_to(QString filename) {
+	_filename = filename;
+
 	QFile fh(filename);
 	if(!fh.open(QIODevice::WriteOnly | QIODevice::Text)) {
 		qCritical() << "File" << filename << "is not writable";
@@ -102,13 +102,40 @@ void AgrFile::_add_agr_graph(int graph_id, QString line) {
 			exit(1);
 		}
 	}
-	_curr_graph = new AgrGraph(_plot, line);
-	_graphs[graph_id] = _curr_graph;
+	_add_graph(new AgrGraph(_plot, line), graph_id);
+}
+
+void AgrFile::_add_graph(AgrGraph *ng, int graph_id) {
+	beginInsertRows(QModelIndex(), rowCount() - 1, rowCount());
+	ng->set_id(graph_id);
+	_graphs[graph_id] = ng;
+	_sorted_graphs.push_back(graph_id);
+	_curr_graph = ng;
+	endInsertRows();
+
+}
+
+AgrGraph *AgrFile::graph(int graph_id) {
+	if(!_graphs.contains(graph_id)) {
+		qCritical() << "There is no graph" << graph_id;
+		// TODO: to be removed
+		exit(1);
+	}
+
+	return _graphs.value(graph_id);
+}
+
+AgrGraph *AgrFile::graph_by_sorted_idx(int idx) {
+	if(!_sorted_graphs.contains(idx)) {
+		qCritical() << "There is no graph with sorted index" << idx;
+		// TODO: to be removed
+		exit(1);
+	}
+
+	return graph(_sorted_graphs.at(idx));
 }
 
 bool AgrFile::parse_agr(QString filename) {
-	_filename = filename;
-
 	QRegularExpression re_header_start("# (disgrace|Grace) project file");
 	QRegularExpression re_header_stop("@timestamp def");
 	QRegularExpression re_region_start("@r(\\d+) (on|off)");
@@ -253,6 +280,7 @@ bool AgrFile::parse_agr(QString filename) {
 		exit(1);
 	}
 
+	_filename = filename;
 	_setup_colours();
 	_check_consistency();
 
@@ -283,6 +311,30 @@ void AgrFile::_setup_colours() {
 	for(int i = 0; i < QColorDialog::customCount() && i < colours.size(); i++) {
 		QColorDialog::setCustomColor(i, colours[i]);
 	}
+}
+
+int AgrFile::rowCount(const QModelIndex &parent) const {
+	return _sorted_graphs.size();
+}
+
+int AgrFile::columnCount(const QModelIndex &parent) const {
+	return 1;
+}
+
+QVariant AgrFile::data(const QModelIndex &index, int role) const {
+	if(!index.isValid()) return QVariant();
+	if(index.row() >= _graphs.size() || index.row() < 0) return QVariant();
+
+	int graph_id = index.row();
+	AgrGraph *graph = _graphs[_sorted_graphs[graph_id]];
+	QVariant res;
+
+	if(role == Qt::DisplayRole) {
+		char plus_minus = (graph->visible()) ? '+' : '-';
+		res = tr("(%1) Graph %2 [%3]").arg(plus_minus).arg(graph_id).arg(graph->rowCount());
+	}
+
+	return res;
 }
 
 } /* namespace dg */

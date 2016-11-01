@@ -74,6 +74,8 @@ public:
 	// getters and setters
 	QPair<QCPRange, QCPRange> get_xy_ranges();
 	void set_xy_ranges(QCPRange x_range, QCPRange y_range);
+	bool visible();
+	void set_visible(bool is_visible);
 
 public slots:
 	bool submit() Q_DECL_OVERRIDE;

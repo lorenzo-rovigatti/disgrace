@@ -17,6 +17,7 @@ Once all the dependencies are met, the code can be compiled as follows:
 * ```cd build```
 * ```cmake ..```
 * ```make```
+
 If the compilation is successful, the disgrace executable will be placed in the build/bin folder. 
 
 ## Features

@@ -39,6 +39,8 @@ public slots:
 	void toggle_legend(bool);
 	void toggle_drag_legend(bool);
 	void export_as_pdf();
+	void open();
+	void save();
 	void save_as();
 	void import_datasets(ImportDatasetResult &);
 
@@ -53,6 +55,9 @@ public slots:
 	 * @param nc the new command to be added to the undo stack
 	 */
 	void push_command(QUndoCommand *nc);
+
+private slots:
+	void _on_execute_command();
 
 private:
 	void _initialise_undo_stack();
@@ -69,6 +74,11 @@ private:
 	ImportDataset *_import_dataset_dialog;
 	SetAppearance *_set_appearance_dialog;
 	AxisRanges _old_ranges;
+
+	bool _is_unsaved;
+
+	void _use_agr_file(AgrFile *new_file);
+	void _update_title();
 };
 
 } /* namespace dg */

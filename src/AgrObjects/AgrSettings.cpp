@@ -217,7 +217,7 @@ void SettingsMap::write_maps(QTextStream &ts) {
 
 QList<QColor> SettingsMap::colours() {
 	QList<int> keys = _colours.keys();
-	qSort(keys);
+	std::sort(keys.begin(), keys.end());
 
 	QList<QColor> res;
 	foreach(int key, keys) {

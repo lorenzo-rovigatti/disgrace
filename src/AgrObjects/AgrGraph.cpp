@@ -361,4 +361,12 @@ void AgrGraph::set_xy_ranges(QCPRange x_range, QCPRange y_range) {
 	_axis_rect->axis(QCPAxis::atLeft, 0)->setRange(y_range);
 }
 
+bool AgrGraph::visible() {
+	return !_settings.get<bool>("hidden");
+}
+
+void AgrGraph::set_visible(bool is_visible) {
+	_settings.put_bool("hidden", !is_visible);
+}
+
 } /* namespace dg */

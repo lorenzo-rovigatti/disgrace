@@ -16,15 +16,18 @@ class SetAppearance: public QDialog {
 Q_OBJECT
 
 public:
-	explicit SetAppearance(AgrFile *agr_file, QWidget *parent = 0);
+	explicit SetAppearance(QWidget *parent = 0);
 	~SetAppearance();
+
+	void connect_to_file(AgrFile *agr_file);
 
 public slots:
 	void show() Q_DECL_OVERRIDE;
 	void pick_colour();
 
-protected slots:
+private slots:
 	void change_btn_colour_background(const QString &colour_name);
+	void update_list_model(int cb_idx);
 
 private:
 	void _setup_widgets();

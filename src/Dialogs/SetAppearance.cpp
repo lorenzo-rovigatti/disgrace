@@ -8,28 +8,13 @@
 
 namespace dg {
 
-SetAppearance::SetAppearance(AgrFile *agr_file, QWidget *parent) :
-		QDialog(parent), _ui(new Ui::SetAppearance), _agr_file(agr_file) {
+SetAppearance::SetAppearance(QWidget *parent) :	QDialog(parent), _ui(new Ui::SetAppearance), _agr_file(NULL) {
 	_ui->setupUi(this);
-	_ui->list_curves->setModel(agr_file->graphs()[0]);
 
 	_setup_widgets();
 
 	_mapper = new QDataWidgetMapper(this);
-	_mapper->setModel(agr_file->graphs()[0]);
 	_mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
-	_mapper->addMapping(_ui->line_legend, AgrGraph::Legend);
-	// TODO: we should set up a model for the combobox to make it possible to use currentData rather than currentText
-	_mapper->addMapping(_ui->cb_line_style, AgrGraph::LineStyle, "currentText");
-	_mapper->addMapping(_ui->sb_line_width, AgrGraph::LineWidth);
-	_mapper->addMapping(_ui->line_colour, AgrGraph::LineColour);
-	_mapper->addMapping(_ui->cb_symbol_type, AgrGraph::SymbolType);
-	_mapper->addMapping(_ui->sb_symbol_size, AgrGraph::SymbolSize);
-	_mapper->addMapping(_ui->symbol_colour, AgrGraph::SymbolColour);
-
-	// connects the list widget to the mapper, so that the latter is notified when the user changes the selected set
-	QObject::connect(_ui->list_curves->selectionModel(), &QItemSelectionModel::currentRowChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
-	QObject::connect(agr_file->graphs()[0], &AgrGraph::dataChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
 
 	// set up the colour pickers
 	QAction *line_colour_action = _ui->line_colour->addAction(QIcon(), QLineEdit::TrailingPosition);
@@ -48,6 +33,40 @@ SetAppearance::SetAppearance(AgrFile *agr_file, QWidget *parent) :
 SetAppearance::~SetAppearance() {
 	delete _mapper;
 	delete _ui;
+}
+
+void SetAppearance::connect_to_file(AgrFile *agr_file) {
+	_agr_file = agr_file;
+	_ui->cb_plots->setModel(agr_file);
+	// the static case is required because the currentIndexChanged method is overloaded (cfr. http://doc.qt.io/qt-5/qcombobox.html#currentIndexChanged)
+	QObject::connect(_ui->cb_plots, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &SetAppearance::update_list_model);
+	update_list_model(0);
+}
+
+void SetAppearance::update_list_model(int cb_idx) {
+	if(_ui->list_curves->model()) {
+		AgrGraph *graph = static_cast<AgrGraph *>(_ui->list_curves->model());
+		QObject::disconnect(graph, &AgrGraph::dataChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
+		QObject::disconnect(_ui->list_curves->selectionModel(), &QItemSelectionModel::currentRowChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
+	}
+
+	if(_agr_file->rowCount() > 0) {
+		AgrGraph *graph = _agr_file->graph_by_sorted_idx(cb_idx);
+		_ui->list_curves->setModel(graph);
+		_mapper->setModel(graph);
+		// the mappings are cleared every time a new model is set, so we have to set them up every time
+		_mapper->addMapping(_ui->line_legend, AgrGraph::Legend);
+		// TODO: we should set up a model for the combobox to make it possible to use currentData rather than currentText
+		_mapper->addMapping(_ui->cb_line_style, AgrGraph::LineStyle, "currentText");
+		_mapper->addMapping(_ui->sb_line_width, AgrGraph::LineWidth);
+		_mapper->addMapping(_ui->line_colour, AgrGraph::LineColour);
+		_mapper->addMapping(_ui->cb_symbol_type, AgrGraph::SymbolType);
+		_mapper->addMapping(_ui->sb_symbol_size, AgrGraph::SymbolSize);
+		_mapper->addMapping(_ui->symbol_colour, AgrGraph::SymbolColour);
+		// connects the list widget to the mapper, so that the latter is notified when the user changes the selected set
+		QObject::connect(_ui->list_curves->selectionModel(), &QItemSelectionModel::currentRowChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
+		QObject::connect(graph, &AgrGraph::dataChanged, _mapper, &QDataWidgetMapper::setCurrentModelIndex);
+	}
 }
 
 void SetAppearance::show() {
