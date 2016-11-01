@@ -7,7 +7,17 @@ version of xmgrace is being developed (see [here](https://sourceforge.net/projec
 surely commendable, I believe that a complete rewrite is necessary. 
 
 ## Installation
-Disgrace requires qt5 and boost::property_tree. On ubuntu it boils down to installing the packages qtbase5-dev 
+Disgrace requires cmake, qt5 and boost::property_tree. On ubuntu it boils down to installing
+* cmake
+* qtbase5-dev
+* libboost-dev
+
+Once all the dependencies are met, the code can be compiled as follows:
+* ```mkdir build```
+* ```cd build```
+* ```cmake ..```
+* ```make```
+If the compilation is successful, the disgrace executable will be placed in the build/bin folder. 
 
 ## Features
 * Undo/redo
