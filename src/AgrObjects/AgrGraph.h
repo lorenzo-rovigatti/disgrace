@@ -72,8 +72,9 @@ public:
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
 
 	// getters and setters
-	QPair<QCPRange, QCPRange> get_xy_ranges();
-	void set_xy_ranges(QCPRange x_range, QCPRange y_range);
+	GraphRange get_graph_range();
+	GraphRange get_current_graph_range();
+	void set_graph_range(GraphRange &range);
 	bool visible();
 	void set_visible(bool is_visible);
 
@@ -90,6 +91,7 @@ signals:
 
 protected:
 	QCPAxisRect *_axis_rect;
+	QMap<QCPAxis::AxisType, QString> _axis_names;
 	QCustomPlot *_plot;
 	QCPLegend *_legend;
 	Dataset *_curr_dataset;

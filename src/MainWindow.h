@@ -58,6 +58,7 @@ public slots:
 
 private slots:
 	void _on_execute_command();
+	void _autosave();
 
 private:
 	void _initialise_undo_stack();
@@ -66,6 +67,8 @@ private:
 	QUndoStack *_undo_stack;
 	QUndoView *_undo_view;
 
+	QTimer *_autosave_timer;
+
 	QCustomPlot *_plot;
 	bool _toggle_drag_legend, _dragging_legend;
 	QPointF _drag_legend_origin, _old_legend_pos;
@@ -73,12 +76,13 @@ private:
 	AgrFile *_agr_file;
 	ImportDataset *_import_dataset_dialog;
 	SetAppearance *_set_appearance_dialog;
-	AxisRanges _old_ranges;
+	GraphRange _old_ranges;
 
 	bool _is_unsaved;
 
 	void _use_agr_file(AgrFile *new_file);
 	void _update_title();
+	void _read_settings();
 };
 
 } /* namespace dg */

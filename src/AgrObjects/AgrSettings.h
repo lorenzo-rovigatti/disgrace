@@ -32,6 +32,7 @@ public:
 
 	void overwrite_settings_from(const AgrSettings &new_settings);
 	void set_paths_to_be_quoted(QStringList path_list) { _paths_to_be_quoted = path_list; }
+	void set_overlapping_keys(QStringList key_list) { _overlapping_keys = key_list; }
 	/**
 	 * @brief Put q_value as the value of the key pointed by q_path.
 	 *
@@ -57,6 +58,7 @@ public:
 	void put_bool(QString q_path, bool q_value);
 
 	template<typename T> T get(QString q_path);
+	QString get_overlapping(QString q_path);
 	QStringList as_string_list();
 
 	void print_as_info();
@@ -64,6 +66,8 @@ public:
 private:
 	pt::ptree _tree;
 	QStringList _paths_to_be_quoted;
+	/// List of keys that have more than one associated value, one of which should be either on or off
+	QStringList _overlapping_keys;
 
 	QStringList _as_string_list(pt::ptree &tree, QString tot_path);
 	/**

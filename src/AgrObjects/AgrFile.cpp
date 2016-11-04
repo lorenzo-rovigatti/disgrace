@@ -9,7 +9,7 @@
 
 #include "AgrDefaults.h"
 
-#include <QFile>
+#include <QSaveFile>
 #include <QDebug>
 #include <iostream>
 
@@ -24,6 +24,8 @@ AgrFile::AgrFile(QCustomPlot *plot): _filename(), _plot(plot), _curr_graph(NULL)
 	to_be_quoted << "default sformat"
 			<< "timestamp def";
 	_settings.set_paths_to_be_quoted(to_be_quoted);
+	QStringList overlapping_keys("timestamp");
+	_settings.set_overlapping_keys(overlapping_keys);
 	_settings.overwrite_settings_from(AgrDefaults::file());
 	_settings_map = AgrDefaults::settings_map();
 
@@ -48,8 +50,9 @@ QList<Dataset *> AgrFile::datasets(int graph_id) {
 
 void AgrFile::write_to(QString filename) {
 	_filename = filename;
+	_settings.put("timestamp def", QDateTime::currentDateTime().toString("ddd MMM d hh:mm:ss yy"));
 
-	QFile fh(filename);
+	QSaveFile fh(filename);
 	if(!fh.open(QIODevice::WriteOnly | QIODevice::Text)) {
 		qCritical() << "File" << filename << "is not writable";
 		// TODO: to be removed;
@@ -73,6 +76,8 @@ void AgrFile::write_to(QString filename) {
 	foreach(AgrGraph *graph, _graphs.values()) {
 		graph->write_datasets(out);
 	}
+
+	fh.commit();
 }
 
 void AgrFile::_add_header_line(QString line) {

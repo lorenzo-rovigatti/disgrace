@@ -19,6 +19,7 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	_ui->setupUi(this);
 	_import_dataset_dialog = new ImportDataset(this);
 	_set_appearance_dialog = new SetAppearance(this);
+	_autosave_timer = new QTimer(this);
 
 	_plot = _ui->custom_plot;
 
@@ -59,6 +60,10 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	QObject::connect(_plot, &QCustomPlot::mouseRelease, this, &MainWindow::mouse_release);
 	QObject::connect(_plot, &QCustomPlot::beforeReplot, this, &MainWindow::before_replot);
 	QObject::connect(_plot, &QCustomPlot::axisDoubleClick, this, &MainWindow::axis_double_click);
+
+	QObject::connect(_autosave_timer, &QTimer::timeout, this, &MainWindow::_autosave);
+
+	_read_settings();
 }
 
 MainWindow::~MainWindow() {
@@ -68,6 +73,13 @@ MainWindow::~MainWindow() {
 	delete _undo_stack;
 	delete _import_dataset_dialog;
 	delete _set_appearance_dialog;
+}
+
+void MainWindow::_read_settings() {
+	QSettings settings;
+
+	bool autosave_enabled = settings.value("autosave", true).toBool();
+	if(autosave_enabled) _autosave_timer->start(settings.value("autosave/time", 60000).toInt());
 }
 
 void MainWindow::_on_execute_command() {
@@ -109,13 +121,8 @@ void MainWindow::_use_agr_file(AgrFile *new_file) {
 }
 
 void MainWindow::toggle_axis_dragging(bool val) {
-	if(val) {
-		_old_ranges.ranges.clear();
-		foreach(QCPAxis *axis, _plot->axisRect()->axes()) {
-			_old_ranges.ranges[axis] = axis->range();
-		}
-	}
-	else _undo_stack->push(new AxisDraggingCommand(_plot, _old_ranges));
+	if(val) _old_ranges = _agr_file->current_graph()->get_graph_range();
+	else _undo_stack->push(new AxisDraggingCommand(_agr_file->current_graph(), _old_ranges));
 
 	qDebug() << "Toggling the axis dragging to" << val;
 	_plot->setInteraction(QCP::iRangeDrag, val);
@@ -211,6 +218,10 @@ void MainWindow::save_as() {
 	}
 }
 
+void MainWindow::_autosave() {
+	if(!_agr_file->filename().isNull()) save();
+}
+
 void MainWindow::write_to_pdf(QString filename) {
 	_plot->savePdf(filename);
 }
@@ -237,7 +248,7 @@ void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) 
 	bool ok;
 	QString new_label = QInputDialog::getText(this, "disgrace", tr("New axis label:"), QLineEdit::Normal, axis->label(), &ok);
 	if(ok) {
-		AxisAppearance new_app;
+		AxisAppearanceDetails new_app;
 		new_app.label = new_label;
 		_undo_stack->push(new AxisAppearanceCommand(_plot, axis, new_app));
 	}

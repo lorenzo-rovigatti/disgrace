@@ -33,6 +33,7 @@ public:
 	QList<AgrGraph *> graphs() { return _graphs.values(); }
 	AgrGraph *graph(int graph_id);
 	AgrGraph *graph_by_sorted_idx(int idx);
+	AgrGraph *current_graph() { return graph(0); }
 	QList<Dataset *> datasets(int graph_id = 0);
 
 	void write_to(QString filename);

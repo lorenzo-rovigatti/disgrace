@@ -83,10 +83,16 @@ void AgrGraph::_initialise(QCustomPlot *plot) {
 			<< "altyaxis ticklabel append"
 			<< "altyaxis ticklabel prepend";
 	_settings.set_paths_to_be_quoted(to_be_quoted);
+	QStringList overlapping_keys("legend");
+	_settings.set_overlapping_keys(overlapping_keys);
 	_settings.overwrite_settings_from(AgrDefaults::graph());
 
 	// create a top and a right axes, set their visibility to true and then connects their ranges to the bottom and left axes, respectively
 	_axis_rect->setupFullAxesBox(true);
+	_axis_names[QCPAxis::atBottom] = "xaxis";
+	_axis_names[QCPAxis::atLeft] = "yaxis";
+	_axis_names[QCPAxis::atTop] = "altxaxis";
+	_axis_names[QCPAxis::atRight] = "altyaxis";
 	foreach(QCPAxis *axis, _axis_rect->axes()) {
 		_initialise_axis(axis);
 	}
@@ -192,8 +198,8 @@ void AgrGraph::parse_agr_line(QString &line) {
 }
 
 void AgrGraph::load_agr_settings() {
-	QPair<QCPRange, QCPRange> ranges = get_xy_ranges();
-	set_xy_ranges(ranges.first, ranges.second);
+	GraphRange range = get_graph_range();
+	set_graph_range(range);
 }
 
 void AgrGraph::write_headers(QTextStream &ts) {
@@ -345,7 +351,7 @@ bool AgrGraph::submit() {
 	return true;
 }
 
-QPair<QCPRange, QCPRange> AgrGraph::get_xy_ranges() {
+GraphRange AgrGraph::get_graph_range() {
 	QVector<float> world = _settings.get<QVector<float> >("world");
 	if(world.size() != 4) {
 		qCritical() << "The 'world' setting of plot" << id() << "does not contain 4 numbers as it should";
@@ -353,12 +359,31 @@ QPair<QCPRange, QCPRange> AgrGraph::get_xy_ranges() {
 		exit(1);
 	}
 
-	return QPair<QCPRange, QCPRange>(QCPRange(world[0], world[2]), QCPRange(world[1], world[3]));
+	GraphRange res;
+	res.x_range = QCPRange(world[0], world[2]);
+	res.y_range = QCPRange(world[1], world[3]);
+
+	return res;
 }
 
-void AgrGraph::set_xy_ranges(QCPRange x_range, QCPRange y_range) {
-	_axis_rect->axis(QCPAxis::atBottom, 0)->setRange(x_range);
-	_axis_rect->axis(QCPAxis::atLeft, 0)->setRange(y_range);
+GraphRange AgrGraph::get_current_graph_range() {
+	GraphRange res;
+	res.x_range = _axis_rect->axis(QCPAxis::atBottom)->range();
+	res.y_range = _axis_rect->axis(QCPAxis::atLeft)->range();
+
+	return res;
+}
+
+void AgrGraph::set_graph_range(GraphRange &range) {
+	QString world = QString("%1, %2, %3, %4").
+			arg(range.x_range.lower).
+			arg(range.y_range.lower).
+			arg(range.x_range.upper).
+			arg(range.y_range.upper);
+	_settings.put("world", world);
+
+	_axis_rect->axis(QCPAxis::atBottom)->setRange(range.x_range);
+	_axis_rect->axis(QCPAxis::atLeft)->setRange(range.y_range);
 }
 
 bool AgrGraph::visible() {
@@ -367,6 +392,7 @@ bool AgrGraph::visible() {
 
 void AgrGraph::set_visible(bool is_visible) {
 	_settings.put_bool("hidden", !is_visible);
+	_axis_rect->setVisible(is_visible);
 }
 
 } /* namespace dg */

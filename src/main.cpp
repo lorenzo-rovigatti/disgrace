@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
 	qInstallMessageHandler(message_handler);
 
 	QApplication app(argc, argv);
+	QApplication::setOrganizationName("disgrace");
 	QApplication::setApplicationName("disgrace");
 	QApplication::setApplicationVersion("alpha");
 

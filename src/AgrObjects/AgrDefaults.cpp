@@ -7,6 +7,8 @@
 
 #include "AgrDefaults.h"
 
+#include <QDateTime>
+
 namespace dg {
 
 AgrSettings AgrDefaults::_dataset;
@@ -39,6 +41,7 @@ void AgrDefaults::init_defaults() {
 	_file.put("timestamp rot", "0");
 	_file.put("timestamp font", "0");
 	_file.put("timestamp char size", "1.000000");
+	_file.put("timestamp def", QDateTime::currentDateTime().toString("ddd MMM d hh:mm:ss yy"));
 
 	_settings_map.add_line("map color 0 to (255, 255, 255), \"white\"");
 	_settings_map.add_line("map color 1 to (0, 0, 0), \"black\"");

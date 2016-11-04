@@ -8,19 +8,17 @@
 #ifndef SRC_COMMANDS_AXIS_H_
 #define SRC_COMMANDS_AXIS_H_
 
-#include <QUndoStack>
 #include "defs.h"
+#include "../AgrObjects/AgrGraph.h"
 #include "../qcustomplot/qcustomplot.h"
+
+#include <QUndoStack>
 
 namespace dg {
 
-struct AxisAppearance {
-	QString label;
-};
-
 class AxisAppearanceCommand: public QUndoCommand {
 public:
-	AxisAppearanceCommand(QCustomPlot *plot, QCPAxis *axis, AxisAppearance &new_appearance, QUndoCommand *parent = 0);
+	AxisAppearanceCommand(QCustomPlot *plot, QCPAxis *axis, AxisAppearanceDetails &new_appearance, QUndoCommand *parent = 0);
 	virtual ~AxisAppearanceCommand();
 
 	void undo() Q_DECL_OVERRIDE;
@@ -31,26 +29,22 @@ private:
 	QCustomPlot *_plot;
 	QCPAxis *_axis;
 	QMap<int, QString> _axis_types;
-	AxisAppearance _new_appearance;
-	AxisAppearance _old_appearance;
-};
-
-struct AxisRanges {
-	QMap<QCPAxis *, QCPRange> ranges;
+	AxisAppearanceDetails _new_appearance;
+	AxisAppearanceDetails _old_appearance;
 };
 
 class AxisDraggingCommand: public QUndoCommand {
 public:
-	AxisDraggingCommand(QCustomPlot *plot, AxisRanges &old_ranges, QUndoCommand *parent = 0);
+	AxisDraggingCommand(AgrGraph *graph, GraphRange &old_ranges, QUndoCommand *parent = 0);
 	virtual ~AxisDraggingCommand();
 
 	void undo() Q_DECL_OVERRIDE;
 	void redo() Q_DECL_OVERRIDE;
 
 private:
-	QCustomPlot *_plot;
-	AxisRanges _new_ranges;
-	AxisRanges _old_ranges;
+	AgrGraph *_graph;
+	GraphRange _new_range;
+	GraphRange _old_range;
 };
 
 } /* namespace dg */

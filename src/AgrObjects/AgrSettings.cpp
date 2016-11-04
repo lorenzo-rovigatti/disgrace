@@ -55,7 +55,10 @@ QVector<float> AgrSettings::get(QString q_path) {
 
 	QStringList numbers = res_str.split(',');
 	QVector<float> res;
-	foreach(QString s, numbers) res << s.toFloat();
+	foreach(QString s, numbers) {
+		res << s.toFloat();
+		qDebug() << s.toFloat();
+	}
 
 	return res;
 }
@@ -79,14 +82,24 @@ QRectF AgrSettings::get(QString q_path) {
 	return res;
 }
 
+QString AgrSettings::get_overlapping(QString q_path) {
+	if(!_overlapping_keys.contains(q_path)) {
+		qCritical() << q_path << "is not in the list of overlapping keys";
+		// TODO: to be removed
+		exit(1);
+	}
+	q_path += " state";
+	return get<QString>(q_path);
+}
+
 void AgrSettings::put(QString line) {
 	QString key, value;
 
 	line = line.trimmed();
 	// if the line contains a double quote then that's where the value starts
 	int idx = line.indexOf("\"");
-	// if the line contains a number then what's left of the number is interpreted as the key, the rest is the value
-	if(idx == -1) idx = line.indexOf(QRegExp("\\d"));
+	// if the line contains a number then whatever is at the left of that number is interpreted as the key, the rest is the value
+	if(idx == -1) idx = line.indexOf(QRegExp("-?\\d+(\\.\\d+)?"));
 	// otherwise we split the string in the presence of the last whitespace
 	if(idx == -1) idx = line.lastIndexOf(QRegExp("\\s"));
 	key = line.left(idx).trimmed();
@@ -101,9 +114,12 @@ void AgrSettings::put(QString q_path, QString q_value) {
 	if(q_value.startsWith('"') && q_value.endsWith('"')) q_value = q_value.mid(1, q_value.size() - 2);
 	string value = q_value.toStdString();
 
-	QString mystr(pt::ptree::path_type(_translate_path(q_path), ' ').dump().c_str());
+	string translated_path = _translate_path(q_path);
+	if(_overlapping_keys.contains(QString(translated_path.c_str()))) {
+		if(q_value == "on" || q_value == "off") translated_path += " state";
+	}
 
-	_tree.put(pt::ptree::path_type(_translate_path(q_path), ' '), value);
+	_tree.put(pt::ptree::path_type(translated_path, ' '), value);
 }
 
 void AgrSettings::put_bool(QString q_path, bool q_value) {
@@ -123,17 +139,28 @@ QStringList AgrSettings::as_string_list() {
 
 QStringList AgrSettings::_as_string_list(pt::ptree &tree, QString tot_path) {
 	QStringList to_ret;
+	bool is_overlapping = _overlapping_keys.contains(tot_path);
 
-	// check that the data has been set. This call will return true even if data() == ""
-	if(!tree.data().empty()) {
+	// check that the data has been set or that the path should be quoted. In the latter case, we have to
+	// return the string even when this is empty
+	bool to_be_quoted = _paths_to_be_quoted.contains(tot_path);
+	if(!tree.data().empty() || to_be_quoted) {
+		if(is_overlapping) {
+			QString value = tot_path + " " + get_overlapping(tot_path);
+			to_ret.push_back(value);
+		}
+
 		QString value = QString(tree.data().c_str());
-		if(_paths_to_be_quoted.contains(tot_path)) value = "\"" + value + "\"";
+		if(to_be_quoted) value = "\"" + value + "\"";
 		value = tot_path + " " + value;
 		to_ret.push_back(value);
 	}
 	// loop over all the children
 	for(pt::ptree::iterator it = tree.begin(); it != tree.end(); it++) {
 		QString child_data(it->first.c_str());
+		// if the current node is overlapping and the current child is "state" then it is a fake
+		// key used internally to cope with the duplicate issue
+		if(is_overlapping && child_data == "state") continue;
 		QString new_tot_path = (tot_path.size() == 0) ? child_data : tot_path + " " + child_data;
 		to_ret.append(_as_string_list(it->second, new_tot_path));
 	}

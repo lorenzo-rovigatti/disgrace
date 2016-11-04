@@ -22,14 +22,15 @@ If the compilation is successful, the disgrace executable will be placed in the 
 
 ## Features
 * Undo/redo
-* Disgrace should be able to read in sets from files passed as command-line arguments
-* Disgrace files should also contain the data sets
-* Disgrace should be able to parse xmgrace .agr files. Maybe also write them?
-* Heat maps should be supported
+* Disgrace reads in sets from files passed as command-line arguments
+* (Partial) support for xmgrace .agr files
+* Autosave
+
+## Future features
 * It should be possible to operate on data sets (interpolations, regressions and most of the operations available in the _data_ xmgrace menu)
 * Make it (to some degree) scriptable. This should be possibly by a judicious use of [Qt Script](http://doc.qt.io/qt-5/qtscript-index.html)
-* It should be possible to open multiple agr files as panels of the same plot   
-* Autosave
+* It should be possible to open multiple agr files as panels of the same plot
+* Heat maps   
 
 ## Tentative roadmap
 * Add basic set appearance management

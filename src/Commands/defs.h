@@ -40,6 +40,11 @@ struct LegendAppearanceDetails {
 	QPointF position;
 };
 
+struct GraphRange {
+	QCPRange x_range;
+	QCPRange y_range;
+};
+
 struct GraphAppearanceDetails {
 	bool visible;
 	QList<AxisAppearanceDetails> axes;

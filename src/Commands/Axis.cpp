@@ -11,7 +11,7 @@ namespace dg {
 
 // BEGIN AxisAppearanceCommand
 
-AxisAppearanceCommand::AxisAppearanceCommand(QCustomPlot *plot, QCPAxis *axis, AxisAppearance &new_appearance, QUndoCommand *parent):
+AxisAppearanceCommand::AxisAppearanceCommand(QCustomPlot *plot, QCPAxis *axis, AxisAppearanceDetails &new_appearance, QUndoCommand *parent):
 		QUndoCommand(parent), _plot(plot), _axis(axis) {
 	_axis_types[QCPAxis::atLeft] = QString("left");
 	_axis_types[QCPAxis::atRight] = QString("right");
@@ -43,13 +43,10 @@ void AxisAppearanceCommand::redo() {
 // END AxisAppearanceCommand
 
 // BEGIN AxisDraggingCommand
-AxisDraggingCommand::AxisDraggingCommand(QCustomPlot *plot, AxisRanges &old_ranges, QUndoCommand *parent):
-	QUndoCommand(parent), _plot(plot), _old_ranges(old_ranges) {
+AxisDraggingCommand::AxisDraggingCommand(AgrGraph *graph, GraphRange &old_ranges, QUndoCommand *parent):
+	QUndoCommand(parent), _graph(graph), _old_range(old_ranges) {
 
-	foreach(QCPAxis *axis, _plot->axisRect()->axes()) {
-		_new_ranges.ranges[axis] = axis->range();
-	}
-
+	_new_range = graph->get_current_graph_range();
 }
 
 AxisDraggingCommand::~AxisDraggingCommand() {
@@ -57,24 +54,15 @@ AxisDraggingCommand::~AxisDraggingCommand() {
 }
 
 void AxisDraggingCommand::undo() {
-	QMap<QCPAxis *, QCPRange>::iterator it = _old_ranges.ranges.begin();
-	while(it != _old_ranges.ranges.end()) {
-		it.key()->setRange(it.value());
-		++it;
-	}
-
-	_plot->replot();
+	_graph->set_graph_range(_old_range);
+	_graph->replot();
 
 	setText(QObject::tr("Restoring the axes ranges"));
 }
 
 void AxisDraggingCommand::redo() {
-	QMap<QCPAxis *, QCPRange>::iterator it = _new_ranges.ranges.begin();
-	while(it != _new_ranges.ranges.end()) {
-		it.key()->setRange(it.value());
-		++it;
-	}
-	_plot->replot();
+	_graph->set_graph_range(_new_range);
+	_graph->replot();
 
 	setText(QObject::tr("Changing the axes ranges"));
 }
