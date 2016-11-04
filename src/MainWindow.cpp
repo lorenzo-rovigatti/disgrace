@@ -17,6 +17,8 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 		_toggle_drag_legend(false), _dragging_legend(false),
 		_is_unsaved(false) {
 	_ui->setupUi(this);
+	_setup_icons();
+
 	_import_dataset_dialog = new ImportDataset(this);
 	_set_appearance_dialog = new SetAppearance(this);
 	_autosave_timer = new QTimer(this);
@@ -52,6 +54,7 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	QObject::connect(_ui->action_save, &QAction::triggered, this, &MainWindow::save);
 	QObject::connect(_ui->action_save_as, &QAction::triggered, this, &MainWindow::save_as);
 	QObject::connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
+	QObject::connect(_ui->action_about, &QAction::triggered, this, &MainWindow::about);
 	QObject::connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
 	QObject::connect(_ui->action_set_appearance, &QAction::triggered, _set_appearance_dialog, &SetAppearance::show);
 
@@ -121,8 +124,7 @@ void MainWindow::_use_agr_file(AgrFile *new_file) {
 }
 
 void MainWindow::toggle_axis_dragging(bool val) {
-	if(val) _old_ranges = _agr_file->current_graph()->get_graph_range();
-	else _undo_stack->push(new AxisDraggingCommand(_agr_file->current_graph(), _old_ranges));
+	if(!val) _undo_stack->push(new AxisDraggingCommand(_agr_file->current_graph()));
 
 	qDebug() << "Toggling the axis dragging to" << val;
 	_plot->setInteraction(QCP::iRangeDrag, val);
@@ -202,20 +204,18 @@ void MainWindow::open() {
 
 void MainWindow::save() {
 	if(_agr_file->filename().isNull()) save_as();
-	else {
-		_agr_file->write_to(_agr_file->filename());
-		_is_unsaved = false;
-		_update_title();
-	}
+	else write_to_agr(_agr_file->filename());
 }
 
 void MainWindow::save_as() {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save as..."), "", tr("Agr files(*.agr)"));
-	if(filename.size() > 0) {
-		_agr_file->write_to(filename);
-		_is_unsaved = false;
-		_update_title();
-	}
+	if(filename.size() > 0) write_to_agr(filename);
+}
+
+void MainWindow::write_to_agr(QString filename) {
+	_agr_file->write_to(filename);
+	_is_unsaved = false;
+	_update_title();
 }
 
 void MainWindow::_autosave() {
@@ -244,6 +244,11 @@ void MainWindow::import_datasets(ImportDatasetResult &res) {
 	_plot->replot();
 }
 
+void MainWindow::about() {
+	QString text = tr("disgrace %1\n\nby Lorenzo Rovigatti (2016)").arg(DISGRACE_VERSION);
+	QMessageBox::about(this, tr("About disgrace"), text);
+}
+
 void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) {
 	bool ok;
 	QString new_label = QInputDialog::getText(this, "disgrace", tr("New axis label:"), QLineEdit::Normal, axis->label(), &ok);
@@ -252,6 +257,21 @@ void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) 
 		new_app.label = new_label;
 		_undo_stack->push(new AxisAppearanceCommand(_plot, axis, new_app));
 	}
+}
+
+void MainWindow::_setup_icons() {
+	_ui->action_toggle_axis_dragging->setIcon(QIcon(":/images/icons/drag_range.png"));
+
+	_ui->action_new->setIcon(QIcon::fromTheme("document-new"));
+	_ui->action_open->setIcon(QIcon::fromTheme("document-open"));
+	_ui->action_save->setIcon(QIcon::fromTheme("document-save"));
+	_ui->action_save_as->setIcon(QIcon::fromTheme("document-save-as"));
+
+	_ui->action_undo->setIcon(QIcon::fromTheme("edit-undo"));
+	_ui->action_redo->setIcon(QIcon::fromTheme("edit-redo"));
+
+	_ui->action_exit->setIcon(QIcon::fromTheme("application-exit"));
+	_ui->action_about->setIcon(QIcon::fromTheme("help-about"));
 }
 
 void MainWindow::_initialise_undo_stack() {
@@ -271,6 +291,14 @@ void MainWindow::_initialise_undo_stack() {
 	QObject::connect(_ui->action_redo, &QAction::triggered, _undo_stack, &QUndoStack::redo);
 
 	QObject::connect(_undo_stack, &QUndoStack::indexChanged, this, &MainWindow::_on_execute_command);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+	event->accept();
+	if(_is_unsaved) {
+		QMessageBox::StandardButton answer = QMessageBox::question(this, tr("Confirmation"), tr("Exit losing unsaved changes?"));
+		if(answer != QMessageBox::Yes) event->ignore();
+	}
 }
 
 } /* namespace dg */

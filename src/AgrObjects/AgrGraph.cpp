@@ -384,6 +384,7 @@ void AgrGraph::set_graph_range(GraphRange &range) {
 
 	_axis_rect->axis(QCPAxis::atBottom)->setRange(range.x_range);
 	_axis_rect->axis(QCPAxis::atLeft)->setRange(range.y_range);
+	replot();
 }
 
 bool AgrGraph::visible() {

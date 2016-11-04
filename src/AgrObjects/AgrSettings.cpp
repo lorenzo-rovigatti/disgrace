@@ -57,7 +57,6 @@ QVector<float> AgrSettings::get(QString q_path) {
 	QVector<float> res;
 	foreach(QString s, numbers) {
 		res << s.toFloat();
-		qDebug() << s.toFloat();
 	}
 
 	return res;

@@ -35,7 +35,7 @@ private:
 
 class AxisDraggingCommand: public QUndoCommand {
 public:
-	AxisDraggingCommand(AgrGraph *graph, GraphRange &old_ranges, QUndoCommand *parent = 0);
+	AxisDraggingCommand(AgrGraph *graph, QUndoCommand *parent = 0);
 	virtual ~AxisDraggingCommand();
 
 	void undo() Q_DECL_OVERRIDE;

@@ -32,6 +32,7 @@ public:
 	explicit MainWindow(QCommandLineParser *parser, QWidget *parent = 0);
 	virtual ~MainWindow();
 
+	void write_to_agr(QString filename);
 	void write_to_pdf(QString);
 
 public slots:
@@ -43,6 +44,7 @@ public slots:
 	void save();
 	void save_as();
 	void import_datasets(ImportDatasetResult &);
+	void about();
 
 	void axis_double_click(QCPAxis *, QCPAxis::SelectablePart);
 	void mouse_move(QMouseEvent *event);
@@ -61,7 +63,6 @@ private slots:
 	void _autosave();
 
 private:
-	void _initialise_undo_stack();
 	Ui::MainWindow *_ui;
 
 	QUndoStack *_undo_stack;
@@ -76,13 +77,16 @@ private:
 	AgrFile *_agr_file;
 	ImportDataset *_import_dataset_dialog;
 	SetAppearance *_set_appearance_dialog;
-	GraphRange _old_ranges;
 
 	bool _is_unsaved;
 
+	void _initialise_undo_stack();
+	void _setup_icons();
 	void _use_agr_file(AgrFile *new_file);
 	void _update_title();
 	void _read_settings();
+
+	void closeEvent(QCloseEvent *event);
 };
 
 } /* namespace dg */

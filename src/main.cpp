@@ -46,9 +46,10 @@ int main(int argc, char *argv[]) {
 	qInstallMessageHandler(message_handler);
 
 	QApplication app(argc, argv);
-	QApplication::setOrganizationName("disgrace");
-	QApplication::setApplicationName("disgrace");
-	QApplication::setApplicationVersion("alpha");
+	app.setOrganizationName("disgrace");
+	app.setApplicationName("disgrace");
+	app.setApplicationVersion("alpha");
+	app.setWindowIcon(QIcon(":/images/icons/disgrace_icon.png"));
 
 	QCommandLineParser parser;
 	setup_parser(parser);
@@ -74,6 +75,15 @@ int main(int argc, char *argv[]) {
 //	}
 //	app.quit();
 //	printf("N %d\n", ql.size());
+	int res = 0;
+	try {
+		res = app.exec();
+	}
+	catch (...) {
+		QString filename = QString("disgrace_%1.agr").arg(app.applicationPid());
+		std::cerr << "disgrace crashed, saving the plot in file '" << filename.toStdString() << "'" << std::endl;
+		window.write_to_agr(filename);
+	}
 
-	return app.exec();
+	return res;
 }

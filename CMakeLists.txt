@@ -58,8 +58,13 @@ set(UI_SOURCES
 	src/Dialogs/SetAppearance.ui
 )
 
-qt5_wrap_ui(UI_GENERATED_HEADERS ${UI_SOURCES})
+set(UI_RESOURCES
+	src/icons.qrc
+)
 
-add_executable(disgrace ${SOURCES} ${UI_GENERATED_HEADERS})
+qt5_wrap_ui(UI_GENERATED_HEADERS ${UI_SOURCES})
+qt5_add_resources(UI_GENERATED_RESOURCES ${UI_RESOURCES})
+
+add_executable(disgrace ${SOURCES} ${UI_GENERATED_HEADERS} ${UI_GENERATED_RESOURCES})
 
 target_link_libraries(disgrace ${QT5_LIBRARIES})

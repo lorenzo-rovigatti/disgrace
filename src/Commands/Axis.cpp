@@ -43,9 +43,10 @@ void AxisAppearanceCommand::redo() {
 // END AxisAppearanceCommand
 
 // BEGIN AxisDraggingCommand
-AxisDraggingCommand::AxisDraggingCommand(AgrGraph *graph, GraphRange &old_ranges, QUndoCommand *parent):
-	QUndoCommand(parent), _graph(graph), _old_range(old_ranges) {
+AxisDraggingCommand::AxisDraggingCommand(AgrGraph *graph, QUndoCommand *parent):
+	QUndoCommand(parent), _graph(graph) {
 
+	_old_range = graph->get_graph_range();
 	_new_range = graph->get_current_graph_range();
 }
 
@@ -55,14 +56,12 @@ AxisDraggingCommand::~AxisDraggingCommand() {
 
 void AxisDraggingCommand::undo() {
 	_graph->set_graph_range(_old_range);
-	_graph->replot();
 
 	setText(QObject::tr("Restoring the axes ranges"));
 }
 
 void AxisDraggingCommand::redo() {
 	_graph->set_graph_range(_new_range);
-	_graph->replot();
 
 	setText(QObject::tr("Changing the axes ranges"));
 }
