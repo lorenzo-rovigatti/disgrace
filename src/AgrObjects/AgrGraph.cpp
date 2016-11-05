@@ -200,6 +200,10 @@ void AgrGraph::parse_agr_line(QString &line) {
 void AgrGraph::load_agr_settings() {
 	GraphRange range = graph_range();
 	set_graph_range(range);
+	set_axis_label(_axis_rect->axis(QCPAxis::atBottom), axis_label(_axis_rect->axis(QCPAxis::atBottom)));
+	set_axis_label(_axis_rect->axis(QCPAxis::atLeft), axis_label(_axis_rect->axis(QCPAxis::atLeft)));
+	set_axis_label(_axis_rect->axis(QCPAxis::atTop), axis_label(_axis_rect->axis(QCPAxis::atTop)));
+	set_axis_label(_axis_rect->axis(QCPAxis::atRight), axis_label(_axis_rect->axis(QCPAxis::atRight)));
 }
 
 void AgrGraph::write_headers(QTextStream &ts) {
@@ -362,7 +366,6 @@ GraphRange AgrGraph::graph_range() const {
 	GraphRange res;
 	res.x_range = QCPRange(world[0], world[2]);
 	res.y_range = QCPRange(world[1], world[3]);
-
 	return res;
 }
 
@@ -370,7 +373,6 @@ GraphRange AgrGraph::current_graph_range() const {
 	GraphRange res;
 	res.x_range = _axis_rect->axis(QCPAxis::atBottom)->range();
 	res.y_range = _axis_rect->axis(QCPAxis::atLeft)->range();
-
 	return res;
 }
 
@@ -394,6 +396,30 @@ bool AgrGraph::visible() const {
 void AgrGraph::set_visible(bool is_visible) {
 	_settings.put_bool("hidden", !is_visible);
 	_axis_rect->setVisible(is_visible);
+}
+
+QString AgrGraph::axis_label(QCPAxis *axis) const {
+	if(!axis_enabled(axis)) return "";
+
+	QString name = _axis_names.value(axis->axisType());
+	QString key = name + " label";
+	return _settings.get<QString>(key);
+}
+
+void AgrGraph::set_axis_label(QCPAxis *axis, QString new_label) {
+	if(axis_enabled(axis)) {
+		QString name = _axis_names.value(axis->axisType());
+		QString key = name + " label";
+		_settings.put(key, new_label);
+		axis->setLabel(new_label);
+		replot();
+	}
+}
+
+bool AgrGraph::axis_enabled(QCPAxis *axis) const {
+	QString name = _axis_names.value(axis->axisType());
+	QString state = _settings.get<QString>(name);
+	return (state == "on");
 }
 
 } /* namespace dg */

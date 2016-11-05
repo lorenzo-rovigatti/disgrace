@@ -82,7 +82,7 @@ private:
 };
 
 /**
- * @brief Incapsulates "@map font/color ID to VALUE, "name"" lines.
+ * @brief Encapsulates "@map font/color ID to VALUE, "name"" lines.
  */
 class SettingsMap {
 	typedef QPair<QColor, QString> colour_pair;

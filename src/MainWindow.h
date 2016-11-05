@@ -84,7 +84,7 @@ private:
 	void _setup_icons();
 	void _use_agr_file(AgrFile *new_file);
 	void _update_title();
-	void _read_settings();
+	void _load_settings();
 
 	void closeEvent(QCloseEvent *event);
 };

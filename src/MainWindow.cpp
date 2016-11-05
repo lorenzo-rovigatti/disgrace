@@ -17,6 +17,7 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 		_toggle_drag_legend(false), _dragging_legend(false),
 		_is_unsaved(false) {
 	_ui->setupUi(this);
+	_ui->central_widget->layout()->setAlignment(_ui->custom_plot, Qt::AlignTop);
 	_setup_icons();
 
 	_import_dataset_dialog = new ImportDataset(this);
@@ -66,7 +67,7 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 
 	QObject::connect(_autosave_timer, &QTimer::timeout, this, &MainWindow::_autosave);
 
-	_read_settings();
+	_load_settings();
 }
 
 MainWindow::~MainWindow() {
@@ -78,7 +79,7 @@ MainWindow::~MainWindow() {
 	delete _set_appearance_dialog;
 }
 
-void MainWindow::_read_settings() {
+void MainWindow::_load_settings() {
 	QSettings settings;
 
 	bool autosave_enabled = settings.value("autosave", true).toBool();
@@ -255,7 +256,7 @@ void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) 
 	if(ok) {
 		AxisAppearanceDetails new_app;
 		new_app.label = new_label;
-		_undo_stack->push(new AxisAppearanceCommand(_plot, axis, new_app));
+		_undo_stack->push(new AxisAppearanceCommand(_agr_file->current_graph(), axis, new_app));
 	}
 }
 

@@ -59,8 +59,8 @@ public:
 	void set_id(int n_id) { _id_graph = n_id; }
 
 	int id() const { return _id_graph; }
-	QList<Dataset *> datasets() { return _datasets.values(); }
-	bool empty() { return _datasets.empty(); }
+	QList<Dataset *> datasets() const { return _datasets.values(); }
+	bool empty() const { return _datasets.empty(); }
 	Dataset *dataset(int d_id);
 	void setup_new_datasets();
 
@@ -75,15 +75,21 @@ public:
 	GraphRange graph_range() const;
 	GraphRange current_graph_range() const;
 	void set_graph_range(GraphRange &range);
+
 	bool visible() const;
 	void set_visible(bool is_visible);
+
+	QString axis_label(QCPAxis *axis) const;
+	void set_axis_label(QCPAxis *axis, QString new_label);
+
+	bool axis_enabled(QCPAxis *axis) const;
 
 public slots:
 	bool submit() Q_DECL_OVERRIDE;
 	void replot();
 
 signals:
-	/** Signals that some data modification, encapsulated in a QUndoCommand, has been performed.
+	/** Signals that some change, encapsulated in a QUndoCommand, has been performed.
 	 *
 	 * @param nc the command that should be added to the undo stack
 	 */

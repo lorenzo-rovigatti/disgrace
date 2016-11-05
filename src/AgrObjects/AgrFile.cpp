@@ -321,7 +321,7 @@ void AgrFile::_load_settings() {
 }
 
 void AgrFile::set_page_size(const QSize &new_size) {
-	QString size = QString("%1, %2").arg(new_size.width()).arg(new_size.height());
+	QString size = QString("%1, %2").arg(new_size.width()/PAGE_SIZE_FACTOR).arg(new_size.height()/PAGE_SIZE_FACTOR);
 	_settings.put("page size", size);
 
 	_plot->setMinimumSize(new_size);
@@ -330,7 +330,7 @@ void AgrFile::set_page_size(const QSize &new_size) {
 
 QSize AgrFile::page_size() const {
 	QVector<float> size_f = _settings.get<QVector<float> >("page size");
-	return QSize(size_f[0], size_f[1]);
+	return QSize(size_f[0]*PAGE_SIZE_FACTOR, size_f[1]*PAGE_SIZE_FACTOR);
 }
 
 int AgrFile::rowCount(const QModelIndex &parent) const {

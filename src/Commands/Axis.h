@@ -18,7 +18,7 @@ namespace dg {
 
 class AxisAppearanceCommand: public QUndoCommand {
 public:
-	AxisAppearanceCommand(QCustomPlot *plot, QCPAxis *axis, AxisAppearanceDetails &new_appearance, QUndoCommand *parent = 0);
+	AxisAppearanceCommand(AgrGraph *graph, QCPAxis *axis, AxisAppearanceDetails &new_appearance, QUndoCommand *parent = 0);
 	virtual ~AxisAppearanceCommand();
 
 	void undo() Q_DECL_OVERRIDE;
@@ -26,7 +26,7 @@ public:
 	int id() const Q_DECL_OVERRIDE { return AXIS_APPEARANCE; }
 
 private:
-	QCustomPlot *_plot;
+	AgrGraph *_graph;
 	QCPAxis *_axis;
 	QMap<int, QString> _axis_types;
 	AxisAppearanceDetails _new_appearance;

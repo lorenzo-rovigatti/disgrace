@@ -8,7 +8,9 @@
 #ifndef COMMANDS_DEFS_H_
 #define COMMANDS_DEFS_H_
 
+// TODO: encapsulate these in some other way
 #define SYMBOL_FACTOR 0.1
+#define PAGE_SIZE_FACTOR 1.3
 
 #include <QPen>
 #include "../AgrObjects/Dataset.h"
