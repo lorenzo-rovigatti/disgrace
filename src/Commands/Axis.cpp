@@ -46,8 +46,8 @@ void AxisAppearanceCommand::redo() {
 AxisDraggingCommand::AxisDraggingCommand(AgrGraph *graph, QUndoCommand *parent):
 	QUndoCommand(parent), _graph(graph) {
 
-	_old_range = graph->get_graph_range();
-	_new_range = graph->get_current_graph_range();
+	_old_range = graph->graph_range();
+	_new_range = graph->current_graph_range();
 }
 
 AxisDraggingCommand::~AxisDraggingCommand() {

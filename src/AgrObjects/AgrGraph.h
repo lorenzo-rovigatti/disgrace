@@ -58,7 +58,7 @@ public:
 
 	void set_id(int n_id) { _id_graph = n_id; }
 
-	int id() { return _id_graph; }
+	int id() const { return _id_graph; }
 	QList<Dataset *> datasets() { return _datasets.values(); }
 	bool empty() { return _datasets.empty(); }
 	Dataset *dataset(int d_id);
@@ -72,10 +72,10 @@ public:
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
 
 	// getters and setters
-	GraphRange get_graph_range();
-	GraphRange get_current_graph_range();
+	GraphRange graph_range() const;
+	GraphRange current_graph_range() const;
 	void set_graph_range(GraphRange &range);
-	bool visible();
+	bool visible() const;
 	void set_visible(bool is_visible);
 
 public slots:

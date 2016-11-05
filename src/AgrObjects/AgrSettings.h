@@ -57,9 +57,9 @@ public:
 	 */
 	void put_bool(QString q_path, bool q_value);
 
-	template<typename T> T get(QString q_path);
-	QString get_overlapping(QString q_path);
-	QStringList as_string_list();
+	template<typename T> T get(QString q_path) const;
+	QString get_overlapping(QString q_path) const;
+	QStringList as_string_list() const;
 
 	void print_as_info();
 
@@ -69,7 +69,7 @@ private:
 	/// List of keys that have more than one associated value, one of which should be either on or off
 	QStringList _overlapping_keys;
 
-	QStringList _as_string_list(pt::ptree &tree, QString tot_path);
+	QStringList _as_string_list(const pt::ptree &tree, QString tot_path) const;
 	/**
 	 * @brief Sanitises the given path.
 	 *
@@ -78,7 +78,7 @@ private:
 	 * @param q_path
 	 * @return
 	 */
-	std::string _translate_path(QString q_path);
+	std::string _translate_path(QString q_path) const;
 };
 
 /**

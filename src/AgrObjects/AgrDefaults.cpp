@@ -18,7 +18,7 @@ SettingsMap AgrDefaults::_settings_map;
 
 void AgrDefaults::init_defaults() {
 	_file.put("version", DISGRACE_VERSION);
-	_file.put("page size", "722, 467");
+	_file.put("page size", "800, 517");
 	_file.put("page scroll", "5%");
 	_file.put("page inout", "5%");
 	_file.put("link page", "off");

@@ -31,12 +31,12 @@ void AgrSettings::overwrite_settings_from(const AgrSettings &new_settings) {
 }
 
 template<typename T>
-T AgrSettings::get(QString q_path) {
+T AgrSettings::get(QString q_path) const {
 	return _tree.get<T>(pt::ptree::path_type(_translate_path(q_path), ' '));
 }
 
 template<>
-bool AgrSettings::get(QString q_path) {
+bool AgrSettings::get(QString q_path) const {
 	QString res(get<string>(q_path).c_str());
 
 	if(res == "true") return true;
@@ -45,12 +45,12 @@ bool AgrSettings::get(QString q_path) {
 }
 
 template<>
-QString AgrSettings::get(QString q_path) {
+QString AgrSettings::get(QString q_path) const {
 	return QString(get<string>(q_path).c_str());
 }
 
 template<>
-QVector<float> AgrSettings::get(QString q_path) {
+QVector<float> AgrSettings::get(QString q_path) const {
 	QString res_str(get<string>(q_path).c_str());
 
 	QStringList numbers = res_str.split(',');
@@ -63,7 +63,7 @@ QVector<float> AgrSettings::get(QString q_path) {
 }
 
 template<>
-QRectF AgrSettings::get(QString q_path) {
+QRectF AgrSettings::get(QString q_path) const {
 	QString res_str(get<string>(q_path).c_str());
 
 	QStringList numbers = res_str.split(',');
@@ -81,7 +81,7 @@ QRectF AgrSettings::get(QString q_path) {
 	return res;
 }
 
-QString AgrSettings::get_overlapping(QString q_path) {
+QString AgrSettings::get_overlapping(QString q_path) const {
 	if(!_overlapping_keys.contains(q_path)) {
 		qCritical() << q_path << "is not in the list of overlapping keys";
 		// TODO: to be removed
@@ -132,11 +132,11 @@ void AgrSettings::print_as_info() {
 	pt::info_parser::write_info(std::cout, _tree);
 }
 
-QStringList AgrSettings::as_string_list() {
+QStringList AgrSettings::as_string_list() const {
 	return _as_string_list(_tree, "");
 }
 
-QStringList AgrSettings::_as_string_list(pt::ptree &tree, QString tot_path) {
+QStringList AgrSettings::_as_string_list(const pt::ptree &tree, QString tot_path) const {
 	QStringList to_ret;
 	bool is_overlapping = _overlapping_keys.contains(tot_path);
 
@@ -155,7 +155,7 @@ QStringList AgrSettings::_as_string_list(pt::ptree &tree, QString tot_path) {
 		to_ret.push_back(value);
 	}
 	// loop over all the children
-	for(pt::ptree::iterator it = tree.begin(); it != tree.end(); it++) {
+	for(pt::ptree::const_iterator it = tree.begin(); it != tree.end(); it++) {
 		QString child_data(it->first.c_str());
 		// if the current node is overlapping and the current child is "state" then it is a fake
 		// key used internally to cope with the duplicate issue
@@ -167,7 +167,7 @@ QStringList AgrSettings::_as_string_list(pt::ptree &tree, QString tot_path) {
 	return to_ret;
 }
 
-string AgrSettings::_translate_path(QString q_path) {
+string AgrSettings::_translate_path(QString q_path) const {
 	q_path = q_path.trimmed();
 	QStringList lst = q_path.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 	// trim all the strings
@@ -177,9 +177,9 @@ string AgrSettings::_translate_path(QString q_path) {
 	return trimmed_list.join(' ').toStdString();
 }
 
-template float AgrSettings::get<float>(QString);
-template double AgrSettings::get<double>(QString);
-template int AgrSettings::get<int>(QString);
+template float AgrSettings::get<float>(QString) const;
+template double AgrSettings::get<double>(QString) const;
+template int AgrSettings::get<int>(QString) const;
 
 SettingsMap::SettingsMap() {
 

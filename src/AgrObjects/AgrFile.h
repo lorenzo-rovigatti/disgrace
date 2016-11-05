@@ -42,6 +42,10 @@ public:
 	int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
+	// getters and setters
+	void set_page_size(const QSize &size);
+	QSize page_size() const;
+
 private:
 	QVector<QString> _header_lines;
 	QMap<int, AgrGraph *> _graphs;
@@ -64,7 +68,7 @@ private:
 	void _add_header_line(QString line);
 	bool _has_match(QRegularExpression &re, QString &str);
 	void _check_consistency();
-	void _setup_colours();
+	void _load_settings();
 };
 
 } /* namespace dg */

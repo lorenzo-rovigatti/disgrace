@@ -35,7 +35,7 @@ AgrGraph::AgrGraph(QCustomPlot *plot, QString &line) {
 }
 
 AgrGraph::~AgrGraph() {
-	qDebug() << _plot->plotLayout()->elementCount();
+
 }
 
 void AgrGraph::_initialise_axis(QCPAxis *axis) {
@@ -198,7 +198,7 @@ void AgrGraph::parse_agr_line(QString &line) {
 }
 
 void AgrGraph::load_agr_settings() {
-	GraphRange range = get_graph_range();
+	GraphRange range = graph_range();
 	set_graph_range(range);
 }
 
@@ -351,7 +351,7 @@ bool AgrGraph::submit() {
 	return true;
 }
 
-GraphRange AgrGraph::get_graph_range() {
+GraphRange AgrGraph::graph_range() const {
 	QVector<float> world = _settings.get<QVector<float> >("world");
 	if(world.size() != 4) {
 		qCritical() << "The 'world' setting of plot" << id() << "does not contain 4 numbers as it should";
@@ -366,7 +366,7 @@ GraphRange AgrGraph::get_graph_range() {
 	return res;
 }
 
-GraphRange AgrGraph::get_current_graph_range() {
+GraphRange AgrGraph::current_graph_range() const {
 	GraphRange res;
 	res.x_range = _axis_rect->axis(QCPAxis::atBottom)->range();
 	res.y_range = _axis_rect->axis(QCPAxis::atLeft)->range();
@@ -387,7 +387,7 @@ void AgrGraph::set_graph_range(GraphRange &range) {
 	replot();
 }
 
-bool AgrGraph::visible() {
+bool AgrGraph::visible() const {
 	return !_settings.get<bool>("hidden");
 }
 

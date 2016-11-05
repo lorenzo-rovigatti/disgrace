@@ -31,7 +31,7 @@ AgrFile::AgrFile(QCustomPlot *plot): _filename(), _plot(plot), _curr_graph(NULL)
 
 	_add_graph(new AgrGraph(_plot), 0);
 
-	_setup_colours();
+	_load_settings();
 }
 
 AgrFile::~AgrFile() {
@@ -286,7 +286,7 @@ bool AgrFile::parse_agr(QString filename) {
 	}
 
 	_filename = filename;
-	_setup_colours();
+	_load_settings();
 	_check_consistency();
 
 	return true;
@@ -311,11 +311,26 @@ void AgrFile::_check_consistency() {
 	// TODO: to be implemented
 }
 
-void AgrFile::_setup_colours() {
+void AgrFile::_load_settings() {
 	QList<QColor> colours = _settings_map.colours();
 	for(int i = 0; i < QColorDialog::customCount() && i < colours.size(); i++) {
 		QColorDialog::setCustomColor(i, colours[i]);
 	}
+
+	set_page_size(page_size());
+}
+
+void AgrFile::set_page_size(const QSize &new_size) {
+	QString size = QString("%1, %2").arg(new_size.width()).arg(new_size.height());
+	_settings.put("page size", size);
+
+	_plot->setMinimumSize(new_size);
+	_plot->setMaximumSize(new_size);
+}
+
+QSize AgrFile::page_size() const {
+	QVector<float> size_f = _settings.get<QVector<float> >("page size");
+	return QSize(size_f[0], size_f[1]);
 }
 
 int AgrFile::rowCount(const QModelIndex &parent) const {
