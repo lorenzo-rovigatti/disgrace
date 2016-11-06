@@ -24,6 +24,7 @@ public:
 public slots:
 	void show() Q_DECL_OVERRIDE;
 	void pick_colour();
+	void select_set(const QModelIndex &index);
 
 private slots:
 	void change_btn_colour_background(const QString &colour_name);

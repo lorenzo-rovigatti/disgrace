@@ -22,6 +22,8 @@
 namespace dg {
 
 class AgrFile: public QAbstractTableModel {
+Q_OBJECT
+
 public:
 	AgrFile(QCustomPlot *plot);
 	virtual ~AgrFile();

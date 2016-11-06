@@ -15,7 +15,7 @@ namespace dg {
 MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 		QMainWindow(parent), _ui(new Ui::MainWindow),
 		_toggle_drag_legend(false), _dragging_legend(false),
-		_is_unsaved(false) {
+		_is_unsaved(false), _intercept_dbl_click_on_plot(false) {
 	_ui->setupUi(this);
 	_ui->central_widget->layout()->setAlignment(_ui->custom_plot, Qt::AlignTop);
 	_setup_icons();
@@ -47,25 +47,28 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	_plot->replot();
 	if(rescale) _plot->rescaleAxes();
 
-	QObject::connect(_ui->action_toggle_axis_dragging, &QAction::toggled, this, &MainWindow::toggle_axis_dragging);
-	QObject::connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
-	QObject::connect(_ui->action_toggle_drag_legend, &QAction::triggered, this, &MainWindow::toggle_drag_legend);
-	QObject::connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
-	QObject::connect(_ui->action_open, &QAction::triggered, this, &MainWindow::open);
-	QObject::connect(_ui->action_save, &QAction::triggered, this, &MainWindow::save);
-	QObject::connect(_ui->action_save_as, &QAction::triggered, this, &MainWindow::save_as);
-	QObject::connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
-	QObject::connect(_ui->action_about, &QAction::triggered, this, &MainWindow::about);
-	QObject::connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
-	QObject::connect(_ui->action_set_appearance, &QAction::triggered, _set_appearance_dialog, &SetAppearance::show);
+	connect(_ui->action_toggle_axis_dragging, &QAction::toggled, this, &MainWindow::toggle_axis_dragging);
+	connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
+	connect(_ui->action_toggle_drag_legend, &QAction::triggered, this, &MainWindow::toggle_drag_legend);
+	connect(_ui->action_export_as_PDF, &QAction::triggered, this, &MainWindow::export_as_pdf);
+	connect(_ui->action_open, &QAction::triggered, this, &MainWindow::open);
+	connect(_ui->action_save, &QAction::triggered, this, &MainWindow::save);
+	connect(_ui->action_save_as, &QAction::triggered, this, &MainWindow::save_as);
+	connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
+	connect(_ui->action_about, &QAction::triggered, this, &MainWindow::about);
+	connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
+	connect(_ui->action_set_appearance, &QAction::triggered, _set_appearance_dialog, &SetAppearance::show);
 
-	QObject::connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::mouse_move);
-	QObject::connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::mouse_press);
-	QObject::connect(_plot, &QCustomPlot::mouseRelease, this, &MainWindow::mouse_release);
-	QObject::connect(_plot, &QCustomPlot::beforeReplot, this, &MainWindow::before_replot);
-	QObject::connect(_plot, &QCustomPlot::axisDoubleClick, this, &MainWindow::axis_double_click);
+	connect(_plot, &QCustomPlot::mouseMove, this, &MainWindow::plot_mouse_move);
+	connect(_plot, &QCustomPlot::mousePress, this, &MainWindow::plot_mouse_press);
+	connect(_plot, &QCustomPlot::mouseRelease, this, &MainWindow::plot_mouse_release);
+	connect(_plot, &QCustomPlot::beforeReplot, this, &MainWindow::before_replot);
+	connect(_plot, &QCustomPlot::axisDoubleClick, this, &MainWindow::axis_double_click);
+	connect(_plot, &QCustomPlot::mouseDoubleClick, this, &MainWindow::plot_double_click);
+	connect(_plot, &QCustomPlot::plottableDoubleClick, this, &MainWindow::plottable_double_click);
+	connect(_plot, &QCustomPlot::legendDoubleClick, this, &MainWindow::legend_double_click);
 
-	QObject::connect(_autosave_timer, &QTimer::timeout, this, &MainWindow::_autosave);
+	connect(_autosave_timer, &QTimer::timeout, this, &MainWindow::_autosave);
 
 	_load_settings();
 }
@@ -143,7 +146,7 @@ void MainWindow::toggle_drag_legend(bool val) {
 	_toggle_drag_legend = val;
 }
 
-void MainWindow::mouse_move(QMouseEvent *event) {
+void MainWindow::plot_mouse_move(QMouseEvent *event) {
 	if(_dragging_legend) {
 		QRectF rect = _plot->axisRect()->insetLayout()->insetRect(0);
 		// since insetRect is in axisRect coordinates (0..1), we transform the mouse position:
@@ -160,7 +163,7 @@ void MainWindow::mouse_move(QMouseEvent *event) {
 	_ui->statusbar->showMessage(msg);
 }
 
-void MainWindow::mouse_press(QMouseEvent *event) {
+void MainWindow::plot_mouse_press(QMouseEvent *event) {
 	if(_toggle_drag_legend && _plot->legend->selectTest(event->pos(), false) > 0) {
 		_dragging_legend = true;
 		_old_legend_pos = _plot->axisRect()->insetLayout()->insetRect(0).topLeft();
@@ -170,13 +173,45 @@ void MainWindow::mouse_press(QMouseEvent *event) {
 	}
 }
 
-void MainWindow::mouse_release(QMouseEvent *event) {
+void MainWindow::plot_mouse_release(QMouseEvent *event) {
 	Q_UNUSED(event);
 
 	if(_dragging_legend) {
 		_dragging_legend = false;
 		_undo_stack->push(new MoveLegendCommand(_plot, _plot->axisRect()->insetLayout(), _old_legend_pos));
 	}
+
+	if(_intercept_dbl_click_on_plot) {
+		_set_appearance_dialog->show();
+		_intercept_dbl_click_on_plot = false;
+	}
+}
+
+void MainWindow::plot_double_click(QMouseEvent *event) {
+	_intercept_dbl_click_on_plot = true;
+}
+
+void MainWindow::plottable_double_click(QCPAbstractPlottable *plottable, int dataIndex, QMouseEvent *event) {
+	_set_appearance_dialog->select_set(_agr_file->current_graph()->model_index_from_plottable(plottable));
+}
+
+void MainWindow::item_double_click(QCPAbstractItem *item, QMouseEvent *event) {
+	_intercept_dbl_click_on_plot = false;
+}
+
+void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part, QMouseEvent *event) {
+	_intercept_dbl_click_on_plot = false;
+	bool ok;
+	QString new_label = QInputDialog::getText(this, "disgrace", tr("New axis label:"), QLineEdit::Normal, axis->label(), &ok);
+	if(ok) {
+		AxisAppearanceDetails new_app;
+		new_app.label = new_label;
+		_undo_stack->push(new AxisAppearanceCommand(_agr_file->current_graph(), axis, new_app));
+	}
+}
+
+void MainWindow::legend_double_click(QCPLegend *legend, QCPAbstractLegendItem *item, QMouseEvent *event) {
+	_intercept_dbl_click_on_plot = false;
 }
 
 void MainWindow::before_replot() {
@@ -248,16 +283,6 @@ void MainWindow::import_datasets(ImportDatasetResult &res) {
 void MainWindow::about() {
 	QString text = tr("disgrace %1\n\nby Lorenzo Rovigatti (2016)").arg(DISGRACE_VERSION);
 	QMessageBox::about(this, tr("About disgrace"), text);
-}
-
-void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part) {
-	bool ok;
-	QString new_label = QInputDialog::getText(this, "disgrace", tr("New axis label:"), QLineEdit::Normal, axis->label(), &ok);
-	if(ok) {
-		AxisAppearanceDetails new_app;
-		new_app.label = new_label;
-		_undo_stack->push(new AxisAppearanceCommand(_agr_file->current_graph(), axis, new_app));
-	}
 }
 
 void MainWindow::_setup_icons() {

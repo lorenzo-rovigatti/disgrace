@@ -46,12 +46,15 @@ public slots:
 	void import_datasets(ImportDatasetResult &);
 	void about();
 
-	void axis_double_click(QCPAxis *, QCPAxis::SelectablePart);
-	void mouse_move(QMouseEvent *event);
-	void mouse_press(QMouseEvent *event);
-	void mouse_release(QMouseEvent *event);
+	void plot_double_click(QMouseEvent *event);
+	void plot_mouse_move(QMouseEvent *event);
+	void plot_mouse_press(QMouseEvent *event);
+	void plot_mouse_release(QMouseEvent *event);
+	void plottable_double_click(QCPAbstractPlottable *plottable, int dataIndex, QMouseEvent *event);
+	void item_double_click(QCPAbstractItem *item, QMouseEvent *event);
+	void axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part, QMouseEvent *event);
+	void legend_double_click(QCPLegend *legend, QCPAbstractLegendItem *item, QMouseEvent *event);
 	void before_replot();
-
 	/** Adds the passed QUndoCommand to the undo stack
 	 *
 	 * @param nc the new command to be added to the undo stack
@@ -79,6 +82,7 @@ private:
 	SetAppearance *_set_appearance_dialog;
 
 	bool _is_unsaved;
+	bool _intercept_dbl_click_on_plot;
 
 	void _initialise_undo_stack();
 	void _setup_icons();

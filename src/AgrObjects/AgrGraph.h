@@ -62,6 +62,7 @@ public:
 	QList<Dataset *> datasets() const { return _datasets.values(); }
 	bool empty() const { return _datasets.empty(); }
 	Dataset *dataset(int d_id);
+	QModelIndex model_index_from_plottable(QCPAbstractPlottable *plottable);
 	void setup_new_datasets();
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;

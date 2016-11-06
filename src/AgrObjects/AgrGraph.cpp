@@ -117,6 +117,15 @@ void AgrGraph::remove() {
 	_plot->plotLayout()->remove(_axis_rect);
 }
 
+QModelIndex AgrGraph::model_index_from_plottable(QCPAbstractPlottable *plottable) {
+	for(QVector<int>::iterator it = _sorted_datasets.begin(); it != _sorted_datasets.end(); it++) {
+		if(_datasets[*it]->plottable() == plottable) return createIndex(*it, 0);
+	}
+
+	// TODO: fallback, we select the first one. How do we implement a better fallback mechanism?
+	return createIndex(0, 0);
+}
+
 void AgrGraph::setup_new_datasets() {
 	foreach(Dataset *dataset, _datasets.values()) {
 		dataset->create_plottable(_axis_rect, _legend);

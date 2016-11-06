@@ -15,7 +15,8 @@
 
 namespace dg {
 
-AgrFile::AgrFile(QCustomPlot *plot): _filename(), _plot(plot), _curr_graph(NULL), _curr_dataset(NULL) {
+AgrFile::AgrFile(QCustomPlot *plot): _filename(), _plot(plot),
+		_curr_graph(NULL), _curr_dataset(NULL) {
 	// initialise the QCustomPlot instance
 	_plot->plotLayout()->clear();
 	_plot->setAutoAddPlottableToLegend(false);

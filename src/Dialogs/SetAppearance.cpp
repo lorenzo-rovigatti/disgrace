@@ -35,6 +35,10 @@ SetAppearance::~SetAppearance() {
 	delete _ui;
 }
 
+void SetAppearance::select_set(const QModelIndex &index) {
+	_ui->list_curves->setCurrentIndex(index);
+}
+
 void SetAppearance::connect_to_file(AgrFile *agr_file) {
 	_agr_file = agr_file;
 	_ui->cb_plots->setModel(agr_file);
