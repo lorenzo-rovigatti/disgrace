@@ -114,6 +114,7 @@ void AgrFile::_add_agr_graph(int graph_id, QString line) {
 void AgrFile::_add_graph(AgrGraph *ng, int graph_id) {
 	beginInsertRows(QModelIndex(), rowCount() - 1, rowCount());
 	ng->set_id(graph_id);
+	ng->set_settings_map(&_settings_map);
 	_graphs[graph_id] = ng;
 	_sorted_graphs.push_back(graph_id);
 	_curr_graph = ng;

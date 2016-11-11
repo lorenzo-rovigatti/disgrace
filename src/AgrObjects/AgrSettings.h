@@ -8,6 +8,8 @@
 #ifndef AGROBJECTS_AGRSETTINGS_H_
 #define AGROBJECTS_AGRSETTINGS_H_
 
+#include "SettingsMap.h"
+
 #include <boost/property_tree/ptree.hpp>
 #include <QColor>
 #include <QString>
@@ -79,26 +81,6 @@ private:
 	 * @return
 	 */
 	std::string _translate_path(QString q_path) const;
-};
-
-/**
- * @brief Encapsulates "@map font/color ID to VALUE, "name"" lines.
- */
-class SettingsMap {
-	typedef QPair<QColor, QString> colour_pair;
-	typedef QPair<QString, QString> font_pair;
-
-public:
-	SettingsMap();
-	~SettingsMap();
-
-	void add_line(QString line);
-	void write_maps(QTextStream &ts);
-
-	QList<QColor> colours();
-private:
-	QMap<int, colour_pair> _colours;
-	QMap<int, font_pair> _fonts;
 };
 
 } /* namespace dg */

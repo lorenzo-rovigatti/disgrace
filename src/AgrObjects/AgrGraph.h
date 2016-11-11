@@ -57,6 +57,7 @@ public:
 	void remove();
 
 	void set_id(int n_id) { _id_graph = n_id; }
+	void set_settings_map(SettingsMap *settings_map) { _settings_map = settings_map; }
 
 	int id() const { return _id_graph; }
 	QList<Dataset *> datasets() const { return _datasets.values(); }
@@ -112,6 +113,7 @@ protected:
 	SetAppearanceDetails _new_appearance;
 
 	AgrSettings _settings;
+	SettingsMap *_settings_map;
 
 	void _new_dataset(int id);
 	void _initialise_axis(QCPAxis *axis);

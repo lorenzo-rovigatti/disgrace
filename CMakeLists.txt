@@ -49,6 +49,7 @@ set(SOURCES
 	src/AgrObjects/AgrDrawingObject.cpp
 	src/AgrObjects/AgrGraph.cpp
 	src/AgrObjects/AgrSettings.cpp
+	src/AgrObjects/SettingsMap.cpp
 	src/AgrObjects/AgrDefaults.cpp
 )
 

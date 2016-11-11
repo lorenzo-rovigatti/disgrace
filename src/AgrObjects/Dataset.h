@@ -25,7 +25,7 @@ class Dataset: public QObject {
 Q_OBJECT
 
 public:
-	Dataset();
+	Dataset(SettingsMap *settings_map);
 	virtual ~Dataset();
 
 	QVector<double> x, y, z, dx, dy, dz;
@@ -71,6 +71,7 @@ private:
 	QCPLegend *_legend;
 
 	AgrSettings _settings;
+	SettingsMap *_settings_map;
 
 	// TODO: we should not keep a copy of these in each instance...
 	QMap<QString, int> _type_to_n_column;

@@ -15,7 +15,8 @@
 
 namespace dg {
 
-Dataset::Dataset(): _type(""), _id_dataset(-1), _id_header(-1), _plottable(NULL), _legend(NULL) {
+Dataset::Dataset(SettingsMap *settings_map): _type(""), _id_dataset(-1), _id_header(-1),
+		_plottable(NULL), _legend(NULL), _settings_map(settings_map) {
 	_type_to_n_column["xy"] = 2; // An X-Y scatter and/or line plot, plus (optionally) an annotated value
 	_type_to_n_column["xydx"] = 3; // Same as XY, but with error bars (either one- or two-sided) along X axis
 	_type_to_n_column["xydy"] = 3; // Same as XYDX, but error bars are along Y axis

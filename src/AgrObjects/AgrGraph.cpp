@@ -58,6 +58,7 @@ void AgrGraph::_initialise_axis(QCPAxis *axis) {
 
 void AgrGraph::_initialise(QCustomPlot *plot) {
 	_curr_dataset = NULL;
+	_settings_map = NULL;
 	_id_graph = -1;
 
 	_plot = plot;
@@ -156,7 +157,7 @@ void AgrGraph::add_datasets_from_file(QString filename) {
 
 void AgrGraph::_new_dataset(int id) {
 	beginInsertRows(QModelIndex(), rowCount() - 1, rowCount());
-	_curr_dataset = new Dataset();
+	_curr_dataset = new Dataset(_settings_map);
 	_curr_dataset->set_id(id);
 	_datasets[id] = _curr_dataset;
 	_sorted_datasets.push_back(id);
