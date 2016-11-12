@@ -33,10 +33,10 @@ private:
 	AxisAppearanceDetails _old_appearance;
 };
 
-class AxisDraggingCommand: public QUndoCommand {
+class AxisRangesCommand: public QUndoCommand {
 public:
-	AxisDraggingCommand(AgrGraph *graph, QUndoCommand *parent = 0);
-	virtual ~AxisDraggingCommand();
+	AxisRangesCommand(AgrGraph *graph, QUndoCommand *parent = 0);
+	virtual ~AxisRangesCommand();
 
 	void undo() Q_DECL_OVERRIDE;
 	void redo() Q_DECL_OVERRIDE;

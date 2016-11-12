@@ -66,26 +66,6 @@ void AgrGraph::_initialise(QCustomPlot *plot) {
 	_axis_rect = new QCPAxisRect(_plot, true);
 
 	// initialise the setting manager
-	QStringList to_be_quoted;
-	to_be_quoted << "title"
-			<< "subtitle"
-			<< "xaxis label"
-			<< "xaxis ticklabel formula"
-			<< "xaxis ticklabel append"
-			<< "xaxis ticklabel prepend"
-			<< "yaxis label"
-			<< "yaxis ticklabel formula"
-			<< "yaxis ticklabel append"
-			<< "yaxis ticklabel prepend"
-			<< "altxaxis ticklabel formula"
-			<< "altxaxis ticklabel append"
-			<< "altxaxis ticklabel prepend"
-			<< "altyaxis ticklabel formula"
-			<< "altyaxis ticklabel append"
-			<< "altyaxis ticklabel prepend";
-	_settings.set_paths_to_be_quoted(to_be_quoted);
-	QStringList overlapping_keys("legend");
-	_settings.set_overlapping_keys(overlapping_keys);
 	_settings.overwrite_settings_from(AgrDefaults::graph());
 
 	// create a top and a right axes, set their visibility to true and then connects their ranges to the bottom and left axes, respectively
@@ -137,6 +117,17 @@ void AgrGraph::replot() {
 	_plot->replot();
 }
 
+void AgrGraph::autoscale(bool x, bool y) {
+	if(x) {
+		_axis_rect->axis(QCPAxis::atBottom)->rescale(true);
+		_axis_rect->axis(QCPAxis::atTop)->rescale(true);
+	}
+	if(y) {
+		_axis_rect->axis(QCPAxis::atLeft)->rescale(true);
+		_axis_rect->axis(QCPAxis::atRight)->rescale(true);
+	}
+}
+
 void AgrGraph::add_datasets_from_file(QString filename) {
 	QFile input(filename);
 	if(!input.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -149,7 +140,7 @@ void AgrGraph::add_datasets_from_file(QString filename) {
 		max_idx++;
 		_new_dataset(max_idx);
 		_curr_dataset->init_from_file(input, "xy");
-		qDebug() << "Added dataset" << max_idx << "to plot" << id();
+		qDebug() << "Adding dataset" << max_idx << "to graph" << id();
 	}
 
 	setup_new_datasets();

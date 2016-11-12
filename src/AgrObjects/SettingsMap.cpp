@@ -31,7 +31,28 @@ void SMap<T>::set(int idx, const T &first, const QString &second) {
 }
 
 template<typename T>
-QPair<T, QString> SMap<T>::get_by_idx(int idx) {
+int SMap<T>::idx_by_pair(const T &first, const QString &second) {
+	int res = -1;
+	foreach(int idx, _map.keys()) {
+		s_pair curr_pair = _map.value(idx);
+		if(first == curr_pair.first) {
+			res = idx;
+			break;
+		}
+	}
+
+	if(res == -1) {
+		// find the next available index
+		int res = 0;
+		while(_map.contains(res)) res++;
+		set(res, first, second);
+	}
+
+	return res;
+}
+
+template<typename T>
+QPair<T, QString> SMap<T>::pair_by_idx(int idx) const {
 	if(!_map.contains(idx)) {
 		QString excp = QString("This map does not have the index %1").arg(idx);
 		throw excp;
@@ -100,9 +121,6 @@ void SettingsMap::add_line(QString line) {
 			int b = match.captured(3).toInt();
 			QString name = match.captured(4);
 			_colours.set(idx, QColor(r, g, b), name);
-//			colour_pair new_colour(QColor(r, g, b), name);
-//			if(_colours.contains(idx)) qWarning() << "Overwriting colour map" << idx;
-//			_colours[idx] = new_colour;
 		}
 	}
 	else if(type == "font") {
@@ -110,9 +128,6 @@ void SettingsMap::add_line(QString line) {
 		QRegularExpressionMatch match = my_font.match(value);
 		if(match.hasMatch()) {
 			_fonts.set(idx, match.captured(1), match.captured(2));
-//			font_pair new_font(match.captured(1), match.captured(2));
-//			if(_fonts.contains(idx)) qWarning() << "Overwriting font map" << idx;
-//			_fonts[idx] = new_font;
 		}
 	}
 	else {
@@ -122,34 +137,31 @@ void SettingsMap::add_line(QString line) {
 	}
 }
 
+int SettingsMap::idx_by_colour(QColor colour) {
+	return _colours.idx_by_pair(colour, colour.name());
+}
+
+QColor SettingsMap::colour_by_idx(int idx) const {
+	return _colours.pair_by_idx(idx).first;
+}
+
+int SettingsMap::colour_idx_by_dataset_idx(int idx) {
+	QList<QColor> all_colours = colours();
+	// we remove the first colour (which, by default, is white)
+	all_colours.takeFirst();
+	qDebug() << idx;
+	idx = idx % all_colours.size();
+	QColor new_colour = all_colours[idx];
+	return idx_by_colour(new_colour);
+}
+
 void SettingsMap::write_maps(QTextStream &ts) {
 	_colours.write_to(ts);
 	_fonts.write_to(ts);
-//	foreach(int key, _colours.keys()) {
-//		colour_pair cp = _colours.value(key);
-//		QString color = QString("(%1, %2, %3)").arg(cp.first.red()).arg(cp.first.green()).arg(cp.first.blue());
-//		QString line = QString("@map color %1 to %2, %3\n").arg(key).arg(color).arg(cp.second);
-//		ts << line;
-//	}
-//
-//	foreach(int key, _fonts.keys()) {
-//		font_pair fp = _fonts.value(key);
-//		QString line = QString("@map font %1 to %2, %3\n").arg(key).arg(fp.first).arg(fp.second);
-//		ts << line;
-//	}
 }
 
 QList<QColor> SettingsMap::colours() {
 	return _colours.values();
-//	QList<int> keys = _colours.keys();
-//	std::sort(keys.begin(), keys.end());
-//
-//	QList<QColor> res;
-//	foreach(int key, keys) {
-//		res.push_back(_colours.value(key).first);
-//	}
-//
-//	return res;
 }
 
 } /* namespace dg */

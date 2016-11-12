@@ -1,20 +1,11 @@
-#include "MainWindow.h"
+#include "Disgrace.h"
 #include "AgrObjects/AgrDefaults.h"
 
 #include <iostream>
 
-#include <QApplication>
-#include <QCommandLineParser>
 #include <QDebug>
 #include <QDateTime>
 #include <QFileInfo>
-
-void setup_parser(QCommandLineParser &parser) {
-	parser.setApplicationDescription(QApplication::translate("main", "A qt5-based plotting tool inspired by xmgrace"));
-	parser.addHelpOption();
-	parser.addVersionOption();
-	parser.addPositionalArgument("file(s)", QApplication::translate("main", "Text file(s) containing the data to be plotted"));
-}
 
 /**
  * Logs the message msg, also adding the message type, timestamp and the filename, function and line which called the logger.
@@ -45,22 +36,17 @@ void message_handler(QtMsgType type, const QMessageLogContext &context, const QS
 int main(int argc, char *argv[]) {
 	qInstallMessageHandler(message_handler);
 
-	QApplication app(argc, argv);
-	app.setOrganizationName("disgrace");
-	app.setApplicationName("disgrace");
-	app.setApplicationVersion("alpha");
-	app.setWindowIcon(QIcon(":/images/icons/disgrace_icon.png"));
+	dg::Disgrace app(argc, argv);
 
-	QCommandLineParser parser;
-	setup_parser(parser);
-	parser.process(app);
+	int res = 0;
+	try {
+		res = app.exec();
+	}
+	catch(...) {
+		app.die_gracefully();
+	}
 
-	dg::AgrDefaults::init_defaults();
-
-	dg::MainWindow window(&parser);
-
-	window.show();
-
+	return res;
 	// this code gives an idea of what needs to be done to directly export to a file without showing the window (or showing the window for as little time as possible)
 //	window.write_to_pdf("/home/rovigattil/prova.pdf");
 //	window.close();
@@ -75,15 +61,4 @@ int main(int argc, char *argv[]) {
 //	}
 //	app.quit();
 //	printf("N %d\n", ql.size());
-	int res = 0;
-	try {
-		res = app.exec();
-	}
-	catch (...) {
-		QString filename = QString("disgrace_%1.agr").arg(app.applicationPid());
-		std::cerr << "disgrace crashed, saving the plot in file '" << filename.toStdString() << "'" << std::endl;
-		window.write_to_agr(filename);
-	}
-
-	return res;
 }

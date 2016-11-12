@@ -45,6 +45,7 @@ public slots:
 	void save_as();
 	void import_datasets(ImportDatasetResult &);
 	void about();
+	void autoscale(bool x = true, bool y = true, bool add_to_stack = true);
 
 	void plot_double_click(QMouseEvent *event);
 	void plot_mouse_move(QMouseEvent *event);

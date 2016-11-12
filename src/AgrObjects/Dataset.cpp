@@ -36,12 +36,6 @@ Dataset::Dataset(SettingsMap *settings_map): _type(""), _id_dataset(-1), _id_hea
 	_type_to_n_column["xyvmap"] = 4; // Vector map
 	_type_to_n_column["xyboxplot"] = 6; // Box plot (X, median, upper/lower limit, upper/lower whisker)
 
-	QStringList to_be_quoted;
-	to_be_quoted << "legend"
-			<< "comment"
-			<< "avalue prepend"
-			<< "avalue append";
-	_settings.set_paths_to_be_quoted(to_be_quoted);
 	_settings.overwrite_settings_from(AgrDefaults::dataset());
 
 	_implemented_types << "xy";
@@ -57,10 +51,16 @@ void Dataset::set_appearance(SetAppearanceDetails &new_appearance) {
 		QCPCurve *graph = static_cast<QCPCurve *>(_plottable);
 
 		set_legend(new_appearance.legend);
+		_settings.put("line linewidth", QString::number(new_appearance.line_pen.width()*SYMBOL_FACTOR));
+		_settings.put("line type", QString::number(new_appearance.line_pen.style()));
+		int colour_idx = _settings_map->idx_by_colour(new_appearance.line_pen.color());
+		_settings.put("line color", QString::number(colour_idx));
 		graph->setPen(new_appearance.line_pen);
 
 		_settings.put("symbol", QString::number(new_appearance.symbol_type));
 		_settings.put("symbol size", QString::number(new_appearance.symbol_size*SYMBOL_FACTOR));
+		colour_idx = _settings_map->idx_by_colour(new_appearance.symbol_pen.color());
+		_settings.put("symbol color", QString::number(colour_idx));
 
 		QCPScatterStyle ss((QCPScatterStyle::ScatterShape) new_appearance.symbol_type,
 				new_appearance.symbol_pen.color(),
@@ -75,27 +75,20 @@ SetAppearanceDetails Dataset::appearance() {
 	SetAppearanceDetails res;
 
 	if(_type == "xy") {
-		QCPCurve *graph = static_cast<QCPCurve *>(_plottable);
-
 		res.dataset = this;
 		res.legend = legend();
-		res.line_pen = graph->pen();
+		res.line_pen.setWidth(_settings.get<float>("line linewidth")/LINE_FACTOR);
+		res.line_pen.setStyle((Qt::PenStyle) _settings.get<int>("line type"));
+		int color_idx = _settings.get<int>("line color");
+		res.line_pen.setColor(_settings_map->colour_by_idx(color_idx));
 
 		res.symbol_type = _settings.get<int>("symbol");
 		res.symbol_size = (int)(_settings.get<float>("symbol size")/SYMBOL_FACTOR);
-		res.symbol_pen = graph->scatterStyle().pen();
+		color_idx = _settings.get<int>("symbol color");
+		res.symbol_pen.setColor(_settings_map->colour_by_idx(color_idx));
 	}
 
 	return res;
-}
-
-QPen Dataset::_pen() {
-	QPen pen(_default_pen);
-	// +1 because we don't want to have white pens
-	int id_colour = (id() % (QColorDialog::customCount() - 1)) + 1;
-	pen.setColor(QColorDialog::customColor(id_colour));
-
-	return pen;
 }
 
 void Dataset::create_plottable(QCPAxisRect *axis_rect, QCPLegend *rect_legend) {
@@ -107,7 +100,6 @@ void Dataset::create_plottable(QCPAxisRect *axis_rect, QCPLegend *rect_legend) {
 		QCPCurve *new_curve = new QCPCurve(axis_rect->axis(QCPAxis::atBottom), axis_rect->axis(QCPAxis::atLeft));
 		new_curve->setScatterSkip(0);
 		_plottable = new_curve;
-		_plottable->setPen(_pen());
 		_set_plottable_data();
 	}
 
@@ -192,6 +184,9 @@ void Dataset::init_from_file(QFile &input, QString type) {
 	set_visible(true);
 	set_legend(input.fileName());
 	_settings.put("comment", input.fileName());
+	int colour_idx = _settings_map->colour_idx_by_dataset_idx(id());
+	_settings.put("line color", QString::number(colour_idx));
+	_settings.put("symbol color", QString::number(colour_idx));
 
 	int n_columns = -1;
 	int n_lines = 0;

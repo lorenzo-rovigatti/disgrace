@@ -24,7 +24,8 @@ public:
 	~SMap();
 
 	void set(int idx, const T &first, const QString &second);
-	s_pair get_by_idx(int idx);
+	int idx_by_pair(const T &first, const QString &second);
+	s_pair pair_by_idx(int idx) const;
 	QList<T> values();
 
 	void write_to(QTextStream &ts);
@@ -47,12 +48,31 @@ public:
 	void add_line(QString line);
 	void write_maps(QTextStream &ts);
 
+	/**
+	 * @brief Given the colour, returns the associated index (after having added the colour to the map, if not previously present)
+	 *
+	 * @param colour
+	 * @return the map index associated to the given colour
+	 */
+	int idx_by_colour(QColor colour);
+	/**
+	 * @brief Given an index, returns the associated color
+	 *
+	 * @param idx
+	 * @return the colour associated to the given index
+	 */
+	QColor colour_by_idx(int idx) const;
+	/**
+	 * @brief Returns a colour index according to the given dataset index.
+	 * @param idx dataset index
+	 * @return colour index
+	 */
+	int colour_idx_by_dataset_idx(int idx);
+
 	QList<QColor> colours();
 private:
 	SMap<QColor> _colours;
 	SMap<QString> _fonts;
-//	QMap<int, colour_pair> _colours;
-//	QMap<int, font_pair> _fonts;
 };
 
 } /* namespace dg */

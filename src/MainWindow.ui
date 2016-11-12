@@ -39,7 +39,7 @@
      <x>0</x>
      <y>0</y>
      <width>1100</width>
-     <height>33</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -112,6 +112,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="action_toggle_axis_dragging"/>
+   <addaction name="action_autoscale"/>
   </widget>
   <action name="action_new">
    <property name="text">
@@ -216,14 +217,20 @@
     <string>&amp;Set appearance...</string>
    </property>
   </action>
-  <action name="actionProva">
-   <property name="text">
-    <string>prova</string>
-   </property>
-  </action>
   <action name="action_about">
    <property name="text">
-    <string>About disgrace...</string>
+    <string>&amp;About disgrace...</string>
+   </property>
+  </action>
+  <action name="action_autoscale">
+   <property name="text">
+    <string>Autoscale</string>
+   </property>
+   <property name="toolTip">
+    <string>Autoscale the current graph</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
    </property>
   </action>
  </widget>

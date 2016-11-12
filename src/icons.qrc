@@ -1,6 +1,7 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>images/icons/drag_range.png</file>
-    <file>images/icons/disgrace_icon.png</file>
-</qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>images/icons/drag_range.png</file>
+        <file>images/icons/disgrace_icon.png</file>
+        <file>images/icons/autoscale.png</file>
+    </qresource>
 </RCC>

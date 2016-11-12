@@ -21,12 +21,6 @@ AgrFile::AgrFile(QCustomPlot *plot): _filename(), _plot(plot),
 	_plot->plotLayout()->clear();
 	_plot->setAutoAddPlottableToLegend(false);
 
-	QStringList to_be_quoted;
-	to_be_quoted << "default sformat"
-			<< "timestamp def";
-	_settings.set_paths_to_be_quoted(to_be_quoted);
-	QStringList overlapping_keys("timestamp");
-	_settings.set_overlapping_keys(overlapping_keys);
 	_settings.overwrite_settings_from(AgrDefaults::file());
 	_settings_map = AgrDefaults::settings_map();
 
@@ -280,7 +274,7 @@ bool AgrFile::parse_agr(QString filename) {
 		graph->setup_new_datasets();
 	}
 
-	// TODO: add support for multiple plots
+	// TODO: add support for multiple graphs
 	if(_graphs.size() > 1) {
 		qCritical() << "disgrace does not support multiple plots yet";
 		// TODO: to be removed

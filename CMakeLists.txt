@@ -37,6 +37,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(SOURCES
 	src/qcustomplot/qcustomplot.cpp
 	src/main.cpp
+	src/Disgrace.cpp
 	src/MainWindow.cpp
 	src/Commands/Legend.cpp
 	src/Commands/Axis.cpp

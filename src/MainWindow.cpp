@@ -44,8 +44,8 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	}
 	_use_agr_file(new_file);
 
+	if(rescale) autoscale(true, true, false);
 	_plot->replot();
-	if(rescale) _plot->rescaleAxes();
 
 	connect(_ui->action_toggle_axis_dragging, &QAction::toggled, this, &MainWindow::toggle_axis_dragging);
 	connect(_ui->action_toggle_legend, &QAction::toggled, this, &MainWindow::toggle_legend);
@@ -56,6 +56,8 @@ MainWindow::MainWindow(QCommandLineParser *parser, QWidget *parent) :
 	connect(_ui->action_save_as, &QAction::triggered, this, &MainWindow::save_as);
 	connect(_ui->action_data_import, &QAction::triggered, _import_dataset_dialog, &ImportDataset::show);
 	connect(_ui->action_about, &QAction::triggered, this, &MainWindow::about);
+	// we need to use this syntax because autoscale() takes 3 default arguments
+	connect(_ui->action_autoscale, SIGNAL(triggered()), this, SLOT(autoscale()));
 	connect(_import_dataset_dialog, &ImportDataset::import_ready, this, &MainWindow::import_datasets);
 	connect(_ui->action_set_appearance, &QAction::triggered, _set_appearance_dialog, &SetAppearance::show);
 
@@ -128,7 +130,7 @@ void MainWindow::_use_agr_file(AgrFile *new_file) {
 }
 
 void MainWindow::toggle_axis_dragging(bool val) {
-	if(!val) _undo_stack->push(new AxisDraggingCommand(_agr_file->current_graph()));
+	if(!val) push_command(new AxisRangesCommand(_agr_file->current_graph()));
 
 	qDebug() << "Toggling the axis dragging to" << val;
 	_plot->setInteraction(QCP::iRangeDrag, val);
@@ -178,7 +180,7 @@ void MainWindow::plot_mouse_release(QMouseEvent *event) {
 
 	if(_dragging_legend) {
 		_dragging_legend = false;
-		_undo_stack->push(new MoveLegendCommand(_plot, _plot->axisRect()->insetLayout(), _old_legend_pos));
+		push_command(new MoveLegendCommand(_plot, _plot->axisRect()->insetLayout(), _old_legend_pos));
 	}
 
 	if(_intercept_dbl_click_on_plot) {
@@ -206,7 +208,7 @@ void MainWindow::axis_double_click(QCPAxis *axis, QCPAxis::SelectablePart part, 
 	if(ok) {
 		AxisAppearanceDetails new_app;
 		new_app.label = new_label;
-		_undo_stack->push(new AxisAppearanceCommand(_agr_file->current_graph(), axis, new_app));
+		push_command(new AxisAppearanceCommand(_agr_file->current_graph(), axis, new_app));
 	}
 }
 
@@ -267,17 +269,7 @@ void MainWindow::import_datasets(ImportDatasetResult &res) {
 	bool rescale_y = res.autoscale.contains('Y');
 
 	_agr_file->parse_text(res.filename);
-
-	if(rescale_x) {
-		_plot->xAxis->rescale();
-		_plot->xAxis2->rescale();
-	}
-	if(rescale_y) {
-		_plot->yAxis->rescale();
-		_plot->yAxis2->rescale();
-	}
-
-	_plot->replot();
+	autoscale(rescale_x, rescale_y, true);
 }
 
 void MainWindow::about() {
@@ -285,8 +277,20 @@ void MainWindow::about() {
 	QMessageBox::about(this, tr("About disgrace"), text);
 }
 
+void MainWindow::autoscale(bool x, bool y, bool add_to_stack) {
+	_agr_file->current_graph()->autoscale(x, y);
+
+	AxisRangesCommand *nc = new AxisRangesCommand(_agr_file->current_graph());
+	if(add_to_stack) push_command(nc);
+	else {
+		nc->redo();
+		delete nc;
+	}
+}
+
 void MainWindow::_setup_icons() {
 	_ui->action_toggle_axis_dragging->setIcon(QIcon(":/images/icons/drag_range.png"));
+	_ui->action_autoscale->setIcon(QIcon(":/images/icons/autoscale.png"));
 
 	_ui->action_new->setIcon(QIcon::fromTheme("document-new"));
 	_ui->action_open->setIcon(QIcon::fromTheme("document-open"));

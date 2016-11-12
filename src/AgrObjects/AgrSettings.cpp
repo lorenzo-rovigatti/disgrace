@@ -27,6 +27,8 @@ AgrSettings::~AgrSettings() {
 }
 
 void AgrSettings::overwrite_settings_from(const AgrSettings &new_settings) {
+	_paths_to_be_quoted.append(new_settings._paths_to_be_quoted);
+	_overlapping_keys.append(new_settings._overlapping_keys);
 	_tree = new_settings._tree;
 }
 

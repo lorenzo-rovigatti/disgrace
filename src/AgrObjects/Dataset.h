@@ -77,7 +77,6 @@ private:
 	QMap<QString, int> _type_to_n_column;
 	QVector<QString> _implemented_types;
 
-	QPen _pen();
 	void _set_plottable_data();
 	void _check_type(QString type);
 };

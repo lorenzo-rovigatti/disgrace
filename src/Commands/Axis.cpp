@@ -39,24 +39,24 @@ void AxisAppearanceCommand::redo() {
 // END AxisAppearanceCommand
 
 // BEGIN AxisDraggingCommand
-AxisDraggingCommand::AxisDraggingCommand(AgrGraph *graph, QUndoCommand *parent):
+AxisRangesCommand::AxisRangesCommand(AgrGraph *graph, QUndoCommand *parent):
 	QUndoCommand(parent), _graph(graph) {
 
 	_old_range = graph->graph_range();
 	_new_range = graph->current_graph_range();
 }
 
-AxisDraggingCommand::~AxisDraggingCommand() {
+AxisRangesCommand::~AxisRangesCommand() {
 
 }
 
-void AxisDraggingCommand::undo() {
+void AxisRangesCommand::undo() {
 	_graph->set_graph_range(_old_range);
 
 	setText(QObject::tr("Restoring the axes ranges"));
 }
 
-void AxisDraggingCommand::redo() {
+void AxisRangesCommand::redo() {
 	_graph->set_graph_range(_new_range);
 
 	setText(QObject::tr("Changing the axes ranges"));

@@ -17,6 +17,12 @@ AgrSettings AgrDefaults::_file;
 SettingsMap AgrDefaults::_settings_map;
 
 void AgrDefaults::init_defaults() {
+	QStringList to_be_quoted;
+	to_be_quoted << "default sformat"
+			<< "timestamp def";
+	_file.set_paths_to_be_quoted(to_be_quoted);
+	QStringList overlapping_keys("timestamp");
+	_file.set_overlapping_keys(overlapping_keys);
 	_file.put("version", DISGRACE_VERSION);
 	_file.put("page size", "800, 517");
 	_file.put("page scroll", "5%");
@@ -112,6 +118,27 @@ void AgrDefaults::init_defaults() {
 	_settings_map.add_line("map font 58 to \"Utopia-Italic\", \"Utopia-Italic\"");
 	_settings_map.add_line("map font 59 to \"Utopia-Regular\", \"Utopia-Regular\"");
 
+	to_be_quoted.clear();
+	to_be_quoted << "title"
+			<< "subtitle"
+			<< "xaxis label"
+			<< "xaxis ticklabel formula"
+			<< "xaxis ticklabel append"
+			<< "xaxis ticklabel prepend"
+			<< "yaxis label"
+			<< "yaxis ticklabel formula"
+			<< "yaxis ticklabel append"
+			<< "yaxis ticklabel prepend"
+			<< "altxaxis ticklabel formula"
+			<< "altxaxis ticklabel append"
+			<< "altxaxis ticklabel prepend"
+			<< "altyaxis ticklabel formula"
+			<< "altyaxis ticklabel append"
+			<< "altyaxis ticklabel prepend";
+	_graph.set_paths_to_be_quoted(to_be_quoted);
+	overlapping_keys.clear();
+	overlapping_keys << "legend";
+	_graph.set_overlapping_keys(overlapping_keys);
 	_graph.put("hidden", "false");
 	_graph.put("type", "XY");
 	_graph.put("stacked", "false");
@@ -265,6 +292,12 @@ void AgrDefaults::init_defaults() {
 	_graph.put("frame background color", "0");
 	_graph.put("frame background pattern", "0");
 
+	to_be_quoted.clear();
+	to_be_quoted << "legend"
+			<< "comment"
+			<< "avalue prepend"
+			<< "avalue append";
+	_dataset.set_paths_to_be_quoted(to_be_quoted);
 	// TODO: update these defaults with the ones stored in the _file settings tree
 	_dataset.put("hidden", "false");
 	_dataset.put("type", "xy");
