@@ -6,7 +6,9 @@
  */
 
 #include "Dataset.h"
+
 #include "AgrDefaults.h"
+#include "../Utils.h"
 
 #include <iostream>
 #include <QRegularExpression>
@@ -51,14 +53,16 @@ void Dataset::set_appearance(SetAppearanceDetails &new_appearance) {
 		QCPCurve *graph = static_cast<QCPCurve *>(_plottable);
 
 		set_legend(new_appearance.legend);
-		_settings.put("line linewidth", QString::number(new_appearance.line_pen.width()*SYMBOL_FACTOR));
+		int line_width = Utils::line_width_to_agr(new_appearance.line_pen.width());
+		_settings.put("line linewidth", QString::number(line_width));
 		_settings.put("line type", QString::number(new_appearance.line_pen.style()));
 		int colour_idx = _settings_map->idx_by_colour(new_appearance.line_pen.color());
 		_settings.put("line color", QString::number(colour_idx));
 		graph->setPen(new_appearance.line_pen);
 
 		_settings.put("symbol", QString::number(new_appearance.symbol_type));
-		_settings.put("symbol size", QString::number(new_appearance.symbol_size*SYMBOL_FACTOR));
+		int symbol_size = Utils::symbol_size_to_agr(new_appearance.symbol_size);
+		_settings.put("symbol size", QString::number(symbol_size));
 		colour_idx = _settings_map->idx_by_colour(new_appearance.symbol_pen.color());
 		_settings.put("symbol color", QString::number(colour_idx));
 
@@ -77,13 +81,13 @@ SetAppearanceDetails Dataset::appearance() {
 	if(_type == "xy") {
 		res.dataset = this;
 		res.legend = legend();
-		res.line_pen.setWidth(_settings.get<float>("line linewidth")/LINE_FACTOR);
+		res.line_pen.setWidth(Utils::line_width_to_disgrace(_settings.get<float>("line linewidth")));
 		res.line_pen.setStyle((Qt::PenStyle) _settings.get<int>("line type"));
 		int color_idx = _settings.get<int>("line color");
 		res.line_pen.setColor(_settings_map->colour_by_idx(color_idx));
 
 		res.symbol_type = _settings.get<int>("symbol");
-		res.symbol_size = (int)(_settings.get<float>("symbol size")/SYMBOL_FACTOR);
+		res.symbol_size = Utils::symbol_size_to_disgrace(_settings.get<float>("symbol size"));
 		color_idx = _settings.get<int>("symbol color");
 		res.symbol_pen.setColor(_settings_map->colour_by_idx(color_idx));
 	}
@@ -116,8 +120,7 @@ void Dataset::set_visible(bool is_visible) {
 	_settings.put_bool("hidden", !is_visible);
 
 	if(_plottable) {
-		if(is_visible) _plottable->addToLegend(_legend);
-		else _plottable->removeFromLegend(_legend);
+		set_legend(legend());
 		_plottable->setVisible(is_visible);
 	}
 }
@@ -129,7 +132,17 @@ QString Dataset::legend() {
 void Dataset::set_legend(QString new_legend) {
 	_settings.put("legend", new_legend);
 
-	if(_plottable != NULL) _plottable->setName(new_legend);
+	if(_plottable != NULL) {
+		bool in_legend = _legend->hasItemWithPlottable(_plottable);
+		if(new_legend.size() == 0) {
+			 if(in_legend) _plottable->removeFromLegend(_legend);
+		}
+		else {
+			if(!in_legend) _plottable->addToLegend(_legend);
+		}
+
+		_plottable->setName(new_legend);
+	}
 }
 
 void Dataset::append_header_line(QString line) {

@@ -39,6 +39,7 @@ set(SOURCES
 	src/main.cpp
 	src/Disgrace.cpp
 	src/MainWindow.cpp
+	src/Utils.cpp
 	src/Commands/Legend.cpp
 	src/Commands/Axis.cpp
 	src/Commands/Set.cpp

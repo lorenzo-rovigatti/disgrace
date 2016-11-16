@@ -8,6 +8,7 @@
 #include "AgrFile.h"
 
 #include "AgrDefaults.h"
+#include "../Utils.h"
 
 #include <QSaveFile>
 #include <QDebug>
@@ -317,8 +318,9 @@ void AgrFile::_load_settings() {
 }
 
 void AgrFile::set_page_size(const QSize &new_size) {
-	QString size = QString("%1, %2").arg(new_size.width()/PAGE_SIZE_FACTOR).arg(new_size.height()/PAGE_SIZE_FACTOR);
-	_settings.put("page size", size);
+	QSize agr_size = Utils::page_size_to_agr(new_size);
+	QString str_size = QString("%1, %2").arg(agr_size.width()).arg(agr_size.height());
+	_settings.put("page size", str_size);
 
 	_plot->setMinimumSize(new_size);
 	_plot->setMaximumSize(new_size);
@@ -326,7 +328,8 @@ void AgrFile::set_page_size(const QSize &new_size) {
 
 QSize AgrFile::page_size() const {
 	QVector<float> size_f = _settings.get<QVector<float> >("page size");
-	return QSize(size_f[0]*PAGE_SIZE_FACTOR, size_f[1]*PAGE_SIZE_FACTOR);
+	QSize agr_size(size_f[0], size_f[1]);
+	return Utils::page_size_to_disgrace(agr_size);
 }
 
 int AgrFile::rowCount(const QModelIndex &parent) const {
